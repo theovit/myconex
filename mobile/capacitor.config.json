@@ -1,0 +1,38 @@
+{
+  "appId": "com.myconex.mesh",
+  "appName": "MYCONEX",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false,
+    "allowNavigation": [
+      "*.local",
+      "192.168.*.*",
+      "10.*.*.*",
+      "172.16.*.*"
+    ]
+  },
+  "plugins": {
+    "SpeechRecognition": {
+      "language": "en-US"
+    },
+    "StatusBar": {
+      "style": "Dark",
+      "backgroundColor": "#050A0E"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    }
+  },
+  "android": {
+    "buildOptions": {
+      "releaseType": "APK"
+    }
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}

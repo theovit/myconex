@@ -1,0 +1,93 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.installed.cfg
+MANIFEST
+
+# ─── Virtual environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# ─── Ruff / Mypy / Coverage ───────────────────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# ─── Node / Mobile ────────────────────────────────────────────────────────────
+mobile/node_modules/
+mobile/dist/
+mobile/.capacitor/
+mobile/android/
+mobile/ios/
+mobile/.env.local
+mobile/.env.*.local
+
+# ─── Docker ───────────────────────────────────────────────────────────────────
+services/ollama/
+services/redis/data/
+services/qdrant/storage/
+services/qdrant/snapshots/
+services/nats/data/
+services/litellm/data/
+
+# ─── Secrets / Config overrides ───────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.secret
+secrets/
+/etc/myconex/
+
+# ─── Node runtime state ───────────────────────────────────────────────────────
+/var/lib/myconex/
+/var/log/myconex/
+*.log
+*.pid
+
+# ─── IDE ──────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Models / large binaries ─────────────────────────────────────────────────
+*.gguf
+*.bin
+*.pt
+*.safetensors
+models/
+weights/
+
+# --- DLAM / Agentic Tools ---
+/tmp/dlam-agentic-tools/
+dlam-agentic-tools/
+
+# --- Claude AI ---
+.claude/
+
+# --- Additional sensitive files ---
+*.token
+*.key
+*.pem
+*.cert
+webhook_config*

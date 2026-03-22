@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --mesh-bg:        #050A0E;
+    --mesh-surface:   #0D1B26;
+    --mesh-border:    #1A3045;
+    --mesh-glow:      #00FFB2;
+    --mesh-glow-dim:  #00FFB240;
+    --mesh-accent:    #0EA5E9;
+    --mesh-warn:      #F59E0B;
+    --mesh-danger:    #EF4444;
+    --mesh-text:      #CBD5E1;
+    --mesh-muted:     #475569;
+  }
+}
+
+@layer utilities {
+  .glow-green  { text-shadow: 0 0 12px #00FFB2, 0 0 24px #00FFB240; }
+  .glow-blue   { text-shadow: 0 0 12px #0EA5E9, 0 0 24px #0EA5E940; }
+  .glow-amber  { text-shadow: 0 0 12px #F59E0B, 0 0 24px #F59E0B40; }
+  .glow-border { box-shadow: 0 0 0 1px #00FFB240, 0 0 16px #00FFB210; }
+  .glow-ring   { box-shadow: 0 0 0 2px #00FFB280, 0 0 20px #00FFB230; }
+  .glass {
+    background: rgba(13, 27, 38, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1A3045; border-radius: 2px; }
+
+/* Chat message fade-in */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.msg-enter { animation: fadeSlideUp 0.25s ease forwards; }
+
+/* Pulse ring for active nodes */
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0 #00FFB250; }
+  70%  { box-shadow: 0 0 0 8px #00FFB200; }
+  100% { box-shadow: 0 0 0 0 #00FFB200; }
+}
+.pulse-ring { animation: pulseRing 2s ease-out infinite; }

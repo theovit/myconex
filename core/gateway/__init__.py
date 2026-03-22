@@ -1,0 +1,1 @@
+"""MYCONEX Mesh Gateway — API bridge between mobile app and NATS mesh."""

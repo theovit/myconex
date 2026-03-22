@@ -1,0 +1,162 @@
+# MYCONEX Mesh Configuration
+# Default config — override per-node in /etc/myconex/node.yaml
+
+# ─── Node Identity ────────────────────────────────────────────────────────────
+node:
+  name: ""                    # Auto-detected from hostname if empty
+  tier: ""                    # Auto-classified if empty: T1/T2/T3/T4
+  roles: []                   # Auto-assigned based on tier if empty
+  description: ""
+
+# ─── Mesh Network ─────────────────────────────────────────────────────────────
+mesh:
+  mdns_service: "_ai-mesh._tcp"
+  api_port: 8765
+  discovery_timeout: 30       # seconds to wait for initial peer discovery
+  heartbeat_interval: 10      # seconds between liveness pulses
+  heartbeat_timeout: 30       # seconds before marking a node dead
+  max_peers: 256
+
+  # Static peers (optional, for environments without mDNS)
+  static_peers: []
+  # - name: apex-node
+  #   address: 192.168.1.100
+  #   port: 8765
+  #   tier: T1
+
+# ─── NATS ─────────────────────────────────────────────────────────────────────
+nats:
+  url: "nats://localhost:4222"
+  cluster_urls: []            # Additional cluster nodes
+  reconnect_attempts: 10
+  reconnect_delay: 2.0
+  jetstream: true             # Enable JetStream for persistent messaging
+
+# ─── Redis ────────────────────────────────────────────────────────────────────
+redis:
+  url: "redis://localhost:6379"
+  db: 0
+  key_prefix: "myconex:"
+  ttl_default: 3600           # 1 hour
+
+# ─── Qdrant (Vector Store) ────────────────────────────────────────────────────
+qdrant:
+  url: "http://localhost:6333"
+  collection: "myconex-knowledge"
+  vector_size: 768            # nomic-embed-text dimensions
+  distance: "Cosine"
+
+# ─── Ollama ───────────────────────────────────────────────────────────────────
+ollama:
+  host: "localhost"
+  port: 11434
+  url: "http://localhost:11434"
+
+  # Models per tier — installer pulls the appropriate one
+  tier_models:
+    T1: "llama3.1:70b"
+    T2: "llama3.1:8b"
+    T3: "llama3.2:3b"
+    T4: "phi3:mini"
+
+  # Always available (loaded on all nodes if resources allow)
+  embedding_model: "nomic-embed-text"
+
+  num_parallel: 4
+  max_loaded_models: 2
+  keep_alive: "5m"
+
+# ─── LiteLLM Proxy ────────────────────────────────────────────────────────────
+litellm:
+  url: "http://localhost:4000"
+  enabled: false              # Enable to route through LiteLLM proxy
+  fallback_model: "ollama/phi3:mini"
+
+# ─── Task Routing ─────────────────────────────────────────────────────────────
+routing:
+  default_timeout: 60         # seconds
+  max_retries: 3
+  retry_delay: 2.0
+  queue_max_size: 1000
+
+  # Tier preference for task types (can override per deployment)
+  task_tier_map:
+    inference:    T1
+    chat:         T2
+    embedding:    T2
+    search:       T3
+    classify:     T3
+    summarize:    T2
+    translate:    T2
+    code:         T1
+    train:        T1
+    sensor:       T4
+    relay:        T4
+
+# ─── API ──────────────────────────────────────────────────────────────────────
+api:
+  host: "0.0.0.0"
+  port: 8765
+  workers: 4
+  reload: false
+  log_level: "info"
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+
+  # Authentication (disabled by default for mesh-internal comms)
+  auth:
+    enabled: false
+    secret_key: ""            # Set via env: MYCONEX_SECRET_KEY
+
+# ─── Agents ───────────────────────────────────────────────────────────────────
+agents:
+  # Inference agent
+  inference:
+    enabled: true
+    max_concurrent: 4
+    temperature: 0.7
+    max_tokens: 2048
+
+  # Embedding agent
+  embedding:
+    enabled: true
+    max_concurrent: 8
+    batch_size: 32
+
+  # Code agent (T1 only by default)
+  code:
+    enabled: true
+    max_concurrent: 2
+    temperature: 0.2
+
+# ─── Logging ──────────────────────────────────────────────────────────────────
+logging:
+  level: "INFO"               # DEBUG | INFO | WARNING | ERROR
+  format: "%(asctime)s %(levelname)s [%(name)s] %(message)s"
+  file: "/var/log/myconex/myconex.log"
+  max_bytes: 10485760         # 10 MB
+  backup_count: 5
+
+# ─── Telemetry ────────────────────────────────────────────────────────────────
+telemetry:
+  enabled: false
+  prometheus_port: 9090
+  metrics_interval: 15        # seconds
+
+# ─── Discord Bot ──────────────────────────────────────────────────────────────
+discord:
+  enabled: false              # Set true to start the bot (requires DISCORD_BOT_TOKEN in .env)
+  application_id: "1469408384070586432"
+
+  # Access control
+  # allowed_users: []         # Uncomment and list Discord user IDs to restrict access
+                              # Also settable via DISCORD_ALLOWED_USERS env var
+
+  # Response triggering
+  require_mention: false      # true = only respond when @mentioned in server channels
+  free_response_channels: []  # Channel IDs that bypass require_mention
+  auto_thread: false          # true = auto-create a thread per @mention in text channels
+
+  # Bot interaction
+  allow_bots: none            # none | all — whether the bot responds to other bots

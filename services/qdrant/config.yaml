@@ -1,0 +1,23 @@
+# Qdrant Vector DB Config for MYCONEX
+service:
+  host: 0.0.0.0
+  http_port: 6333
+  grpc_port: 6334
+  max_request_size_mb: 32
+
+storage:
+  storage_path: /qdrant/storage
+  snapshots_path: /qdrant/snapshots
+  on_disk_payload: true
+
+  performance:
+    max_search_threads: 0     # 0 = auto (num_cpus / 2)
+    max_optimization_threads: 1
+
+  hnsw_index:
+    m: 16
+    ef_construct: 100
+    full_scan_threshold: 10000
+    on_disk: false
+
+log_level: INFO
