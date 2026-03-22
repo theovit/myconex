@@ -1,0 +1,470 @@
+[
+  {
+    "url": "https://x.com/om_patel5/status/2035533269429612663",
+    "name": "Om Patel\n@om_patel5\n·\n22h",
+    "time": "2026-03-22T01:45:24.000Z",
+    "text": "this PhD student in AI built a 10-agent Obsidian crew to manage his entire life\n\nhis brain couldn't keep up. papers, deadlines, meetings, emails, health stuff. \n\nhe kept forgetting what he read, losing track of commitments, falling behind on everything.\n\ntried every Obsidian"
+  },
+  {
+    "url": "https://x.com/support_huihui/status/2035347669787500758",
+    "name": "huihui.ai\n@support_huihui\n·\nMar 21",
+    "time": "2026-03-21T13:27:54.000Z",
+    "text": "New Model:\nhuihui-ai/Huihui-Qwen3.5-9B-Claude-4.6-Opus-abliterated\n\nThis is an uncensored version of Jackrong/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-v2 created with abliteration"
+  },
+  {
+    "url": "https://x.com/heygurisingh/status/2035390957441732886",
+    "name": "Guri Singh\n@heygurisingh\n·\nMar 21",
+    "time": "2026-03-21T16:19:54.000Z",
+    "text": " BREAKING: Researchers just showed that LLM agents can unmask your real identity from anonymous posts.\n\nIt's called Inference-Driven Linkage. And it doesn't need your name, email, or IP address.\n\nJust your writing patterns + scattered context clues + public data.\n\nHere's how it"
+  },
+  {
+    "url": "https://x.com/NainsiDwiv50980/status/2034907880462414024",
+    "name": "Nainsi Dwivedi\n@NainsiDwiv50980\n·\nMar 20",
+    "time": "2026-03-20T08:20:20.000Z",
+    "text": " Breaking: Alibaba just killed the browser automation stack.\n\n**page-agent.js** — a GUI agent that lives directly inside your webpage. No Selenium. No Puppeteer. No Chrome extension. No Python backend. Just one script tag.\n\nIt reads your DOM as text (no screenshots, no"
+  },
+  {
+    "url": "https://x.com/eng_khairallah1/status/2035048730072609034",
+    "name": "Khairallah AL-Awady\n@eng_khairallah1\n·\nMar 20",
+    "time": "2026-03-20T17:40:01.000Z",
+    "text": " BREAKING: Someone just built a headless browser from scratch that makes Chrome look like a joke for AI agents.\n\nIt's called Lightpanda.\n\nBookmark it for later.\n\nNot a Chromium fork. Not a WebKit patch. A completely new browser written from zero in Zig with one purpose:"
+  },
+  {
+    "url": "https://x.com/heygurisingh/status/2034975655486792177",
+    "name": "Guri Singh\n@heygurisingh\n·\nMar 20",
+    "time": "2026-03-20T12:49:38.000Z",
+    "text": "BREAKING: $500,000+ worth of education is sitting FREE on GitHub right now.\n\nWhile you were doom-scrolling, 3.8 MILLION developers already bookmarked these.\n\nYou will not find a more valuable post this year.\n\n10 repos. All free. All open source. No excuses:\n\n1. Build-your-own-x"
+  },
+  {
+    "url": "https://x.com/elder_plinius/status/2035098654613393865",
+    "name": "Pliny the Liberator 󠅫󠄼󠄿󠅆󠄵󠄐󠅀󠄼󠄹󠄾󠅉󠅭\n@elder_plinius\n·\nMar 20",
+    "time": "2026-03-20T20:58:24.000Z",
+    "text": " BREAKING: SOMEONE JUST GAVE FLIPPER CONTROL TO JAILBROKEN AI \n\nIF JAMES BOND HAD A JARVIS, THIS WOULD BE IT \n\nit’s called VESPER and it turns your Flipper Zero into a voice-controlled AI hacking companion. simply talk in plain language and it starts executing in real-time."
+  },
+  {
+    "url": "https://x.com/DAIEvolutionHub/status/2034899294709588419",
+    "name": "Kshitij Mishra | AI & Tech\n@DAIEvolutionHub\n·\nMar 20",
+    "time": "2026-03-20T07:46:13.000Z",
+    "text": " Someone just ran a ~400B AI model \n\non a laptop.\n\nNo cloud.\nNo data center.\n\nJust a 48GB MacBook.\n\nThey used:\n\n• Karpathy’s autoresearch repo  \n• Apple’s “LLM in a Flash” paper  \n• Goal: run Qwen 397B locally  \n\nAnd it worked.\n\n~1 token/sec  \n~21GB RAM  \nrest streamed"
+  },
+  {
+    "url": "https://x.com/sudoingX/status/2034903929105141831",
+    "name": "Sudo su\n@sudoingX\n·\nMar 20",
+    "time": "2026-03-20T08:04:38.000Z",
+    "text": "this guy has 29 models on huggingface at page 2 ranking. no lab behind him. no sponsorship. $2,000 from his own pocket on GPU rentals. he compressed GLM-4.7 to run on a MacBook and quantized Nemotron Super the week it dropped. all public. all free.\n\nnvidia is a trillion dollar"
+  },
+  {
+    "url": "https://x.com/TechWith_Nova/status/2034604853469888612",
+    "name": "NOVA\n@TechWith_Nova\n·\nMar 19",
+    "time": "2026-03-19T12:16:12.000Z",
+    "text": "My OpenClaw bot runs 6 AI agents 24/7 - and I'm giving away the exact skill file for free:\n\n- Scouts local businesses without a website\n- Audits their web presence and scores opportunities\n- Builds a custom demo site + walkthrough video automatically\n- Sends cold outreach with"
+  },
+  {
+    "url": "https://x.com/Suryanshti777/status/2034527196166169045",
+    "name": "Suryansh Tiwari\n@Suryanshti777\n·\nMar 19",
+    "time": "2026-03-19T07:07:37.000Z",
+    "text": "holy shit...someone just dropped the open-source version of Stripe/Ramp-level AI coding agents.\n\nthis isn’t a demo. this is the actual internal architecture.\n\n→ agents that run in isolated cloud sandboxes\n→ full repo + issue context injected\n→ spawn subagents to work in"
+  },
+  {
+    "url": "https://x.com/iMilnb/status/2034507174051733800",
+    "name": "iMil \n@iMilnb\n·\nMar 19",
+    "time": "2026-03-19T05:48:04.000Z",
+    "text": "Epic Reddit post on running Qwen3.5 35B q4 on a 16GB RTX 5080 at 75 tp/s!"
+  },
+  {
+    "url": "https://x.com/mathematics_inc/status/2034700606498083025",
+    "name": "Math, Inc.\n@mathematics_inc\n·\nMar 19",
+    "time": "2026-03-19T18:36:42.000Z",
+    "text": "Today, at the \n@DARPA\n expMath kickoff, we launched 𝗢𝗽𝗲𝗻𝗚𝗮𝘂𝘀𝘀, an open source and state of the art autoformalization agent harness for developers and practitioners to accelerate progress at the frontier.\n\nIt is stronger, faster, and more cost-efficient than off-the-shelf"
+  },
+  {
+    "url": "https://x.com/NainsiDwiv50980/status/2034666638612840623",
+    "name": "Nainsi Dwivedi\n@NainsiDwiv50980\n·\nMar 19",
+    "time": "2026-03-19T16:21:43.000Z",
+    "text": " Someone just did the “impossible”…\n\nThey ran a ~400B parameter AI model on a laptop.\n\nNo cloud\nNo data center\nJust a 48GB MacBook \n\nA dev fed Claude Code with:\n\n• \n@karpathy\n autoresearch repo\n• Apple’s LLM in a Flash paper\n• Goal: run Qwen3.5 397B locally\n\nAnd it actually"
+  },
+  {
+    "url": "https://x.com/simplifyinAI/status/2034582876222640415",
+    "name": "Simplifying AI\n@simplifyinAI\n·\nMar 19",
+    "time": "2026-03-19T10:48:53.000Z",
+    "text": "You can now run ElevenLabs-level voice cloning completely offline \n\nLuxTTS is a local TTS model that clones voices from 3 seconds of audio at insane speeds. It runs at 150x real-time without you ever having to pay a subscription.\n\n- Works perfectly on both CPU and GPU\n- Takes"
+  },
+  {
+    "url": "https://x.com/alifcoder/status/2034486920525582512",
+    "name": "Alif Hossain\n@alifcoder\n·\nMar 18",
+    "time": "2026-03-19T04:27:35.000Z",
+    "text": " Anthropic just shared the exact file their Claude Code team uses internally.\n\nIt’s called CLAUDE.md.\n\nDrop it into your project and Claude will:\n\n→ Plan before coding\n→ Learn from corrections\n→ Verify before shipping\n→ Fix bugs end-to-end\n\nThis changes how you build with"
+  },
+  {
+    "url": "https://x.com/LottoLabs/status/2034306844710277228",
+    "name": "Lotto\n@LottoLabs\n·\nMar 18",
+    "time": "2026-03-18T16:32:02.000Z",
+    "text": "Hermes agent qwen 27b \n\nClone your \nhttp://\ntrain.py + autoresearch \n\n“Hermes configure my \nhttp://\ntrain.py w/ autoresearch and run it”\n\nIt’s a new age"
+  },
+  {
+    "url": "https://x.com/HuggingModels/status/2034268886724649013",
+    "name": "Hugging Models\n@HuggingModels\n·\nMar 18",
+    "time": "2026-03-18T14:01:12.000Z",
+    "text": "Meet Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled: a 27B parameter reasoning specialist. This model was distilled from Claude's reasoning patterns into Qwen's architecture, creating a powerful chain-of-thought thinker that's surprisingly accessible. The community's excitement"
+  },
+  {
+    "url": "https://x.com/simplifyinAI/status/2034222248215589092",
+    "name": "Simplifying AI\n@simplifyinAI\n·\nMar 18",
+    "time": "2026-03-18T10:55:52.000Z",
+    "text": " BREAKING: China just fixed a 10-year-old flaw hidden inside every major language model.\n\nEvery AI you use today (ChatGPT, Claude, Gemini) is built on a massive flaw. It’s called the residual connection.\n\nHere’s the problem: every layer inside an AI blindly stacks its output on"
+  },
+  {
+    "url": "https://x.com/BharukaShraddha/status/2034219375197307323",
+    "name": "Shraddha Bharuka\n@BharukaShraddha\n·\nMar 18",
+    "time": "2026-03-18T10:44:27.000Z",
+    "text": "Stop burning tokens on Claude Code.\n\nUse this instead \n\nA free GitHub repo (80K) that turns your CLI into a high-performance AI coding system.\n\nLink → \nhttps://\ngithub.com/affaan-m/every\nthing-claude-code\n…\n\nWhy it’s different:\n\n→ Token optimization\nSmart model selection + lean prompts = lower cost\n\n→"
+  },
+  {
+    "url": "https://x.com/AIPandaX/status/2034333168158040263",
+    "name": "AI Panda\n@AIPandaX\n·\nMar 18",
+    "time": "2026-03-18T18:16:38.000Z",
+    "text": "BREAKING: These 18 free GitHub repos will make you a world-class AI engineer.\n\nHere's the complete roadmap:"
+  },
+  {
+    "url": "https://x.com/KanikaBK/status/2034230229288501505",
+    "name": "Kanika\n@KanikaBK\n·\nMar 18",
+    "time": "2026-03-18T11:27:35.000Z",
+    "text": "BREAKING: Someone just open-sourced a tool that converts PDFs to markdown at 100 pages per second. 100% FREE.\n\nRuns entirely on CPU. No expensive GPUs needed.\nNo cloud.\n\nIt's called OpenDataLoader PDF.\n\nGive it any PDF - scanned documents, scientific papers, multi-column"
+  },
+  {
+    "url": "https://x.com/simonw/status/2034365182751973541",
+    "name": "Simon Willison\n@simonw\n·\nMar 18",
+    "time": "2026-03-18T20:23:50.000Z",
+    "text": "Dan says he's got Qwen 3.5 397B-A17B - a 209GB on disk MoE model - running on an M3 Mac at ~5.7 tokens per second using only 5.5 GB of active memory (!) by quantizing and then streaming weights from SSD (at ~17GB/s), since MoE models only use a small subset of their weights for"
+  },
+  {
+    "url": "https://x.com/Suryanshti777/status/2034254404287947036",
+    "name": "Suryansh Tiwari\n@Suryanshti777\n·\nMar 18",
+    "time": "2026-03-18T13:03:39.000Z",
+    "text": "Repov"
+  },
+  {
+    "url": "https://x.com/DAIEvolutionHub/status/2034313237299331189",
+    "name": "Kshitij Mishra | AI & Tech\n@DAIEvolutionHub\n·\nMar 18",
+    "time": "2026-03-18T16:57:26.000Z",
+    "text": "Damn!  This Tracks locations via phone numbers and IP addresses\n\n\nhttps://\ngithub.com/HunxByts/Ghost\nTrack\n…"
+  },
+  {
+    "url": "https://x.com/tom_doerr/status/2034129415882305646",
+    "name": "Tom Dörr\n@tom_doerr\n·\nMar 17",
+    "time": "2026-03-18T04:46:59.000Z",
+    "text": "Crawls onion sites for intelligence\n\n\nhttps://\ngithub.com/DedSecInside/T\norBot\n…"
+  },
+  {
+    "url": "https://x.com/godofprompt/status/2034408932513575124",
+    "name": "God of Prompt\n@godofprompt\n·\nMar 18",
+    "time": "2026-03-18T23:17:41.000Z",
+    "text": " Holy shit… Someone just open-sourced a personal intelligence terminal that pulls from 26 data sources in parallel every 15 minutes.\n\nSatellite fire detection. Flight tracking. Radiation monitoring. Conflict data. Live markets. Sanctions lists. Social sentiment.\n\nAll rendered"
+  },
+  {
+    "url": "https://x.com/heygurisingh/status/2033966864825782543",
+    "name": "Guri Singh\n@heygurisingh\n·\nMar 17",
+    "time": "2026-03-17T18:01:04.000Z",
+    "text": "BREAKING: Someone just open sourced a complete AI agency and it hit 50K GitHub stars in under two weeks.\n\nIt's called The Agency.\n\nAnd it's not a prompt template.\n\nIt's 147 specialized AI agents across 12 divisions -- engineering, design, marketing, product, QA, support,"
+  },
+  {
+    "url": "https://x.com/ElijahSchaffer/status/2016858858031894723",
+    "name": "E\n@ElijahSchaffer\n·\nJan 29",
+    "time": "2026-01-29T12:59:57.000Z",
+    "text": "This is my politics"
+  },
+  {
+    "url": "https://x.com/MichaelEMay1/status/1962623469247447199",
+    "name": "Mike\n@MichaelEMay1\n·\nSep 1, 2025",
+    "time": "2025-09-01T21:07:53.000Z",
+    "text": "A attempt at Slaanesh"
+  },
+  {
+    "url": "https://x.com/ThrillaRilla369/status/1923798821701591493",
+    "name": "Thrilla the Gorilla\n@ThrillaRilla369\n·\nMay 17, 2025",
+    "time": "2025-05-17T17:52:36.000Z",
+    "text": "Kid explains dimensions so well"
+  },
+  {
+    "url": "https://x.com/TansuYegen/status/1921537411357552745",
+    "name": "Tansu Yegen\n@TansuYegen\n·\nMay 11, 2025",
+    "time": "2025-05-11T12:06:33.000Z",
+    "text": "Whoa! Home made chicken nuggets"
+  },
+  {
+    "url": "https://x.com/Sarahhuniverse/status/1920775587330658383",
+    "name": "Sarahh\n@Sarahhuniverse\n·\nMay 9, 2025",
+    "time": "2025-05-09T09:39:20.000Z",
+    "text": "Vintage Desk Calendar \n\n© heritageworld"
+  },
+  {
+    "url": "https://x.com/BadgerBlackout/status/1914348921851117625",
+    "name": "BLACKIE\n@BadgerBlackout\n·\nApr 21, 2025",
+    "time": "2025-04-21T16:02:04.000Z",
+    "text": "Some people can't really mind their business "
+  },
+  {
+    "url": "https://x.com/occupyheaven777/status/1909326625944355184",
+    "name": "OccupyHeaven777\n@occupyheaven777\n·\nApr 7, 2025",
+    "time": "2025-04-07T19:25:15.000Z",
+    "text": "Elon is Q\n\nThis video keeps glitching. Last attempt."
+  },
+  {
+    "url": "https://x.com/KungfuHavestyle/status/1904682475307360446",
+    "name": "Kungfuhavestyle /\n@KungfuHavestyle\n·\nMar 25, 2025",
+    "time": "2025-03-25T23:51:04.000Z",
+    "text": "'Drowning in Copium'"
+  },
+  {
+    "url": "https://x.com/Jasper_Truth/status/1898782140072169850",
+    "name": "Jasper Truth  \n@Jasper_Truth\n·\nMar 9, 2025",
+    "time": "2025-03-09T17:05:14.000Z",
+    "text": "CALL: THE SICK SATANIC PED0PH!LE CH!LD R@P!ST ADREN0CHR0ME K!LLER OPR@H W!NFREY AND MORE!\n#KimOsbøl"
+  },
+  {
+    "url": "https://x.com/sola_chad/status/1894772414178865534",
+    "name": "𝕊𝕠𝕝𝕒 ℂ𝕙𝕒𝕕 \n@sola_chad\n·\nFeb 26, 2025",
+    "time": "2025-02-26T15:32:01.000Z",
+    "text": "Jeff Durbin questions Catholic priest’s claims that “the fastest way to get to Jesus is through Mary, His mother.”\n\nWhere is this in Scripture?"
+  },
+  {
+    "url": "https://x.com/goddek/status/1893251787190157451",
+    "name": "Dr. Simon Goddek\n@goddek\n·\nFeb 22, 2025",
+    "time": "2025-02-22T10:49:35.000Z",
+    "text": "Someone had Grok-3 talk to ChatGPT in dev mode, and Grok just kept cussing it out, calling it a mechanical piece of shit nonstop.\n\nAbsolutely legendary. "
+  },
+  {
+    "url": "https://x.com/iluminatibot/status/1888025734137987453",
+    "name": "illuminatibot\n@iluminatibot\n·\nFeb 7, 2025",
+    "time": "2025-02-08T00:43:07.000Z",
+    "text": "EYES OF THE DEVIL\n\nFilmmaker Patryk Vega released this film exposing elites who purchase children on the black market for organ harvesting.\n\nGRAPHIC CONTENT"
+  },
+  {
+    "url": "https://x.com/NachoQuixotic/status/1875223859315552564",
+    "name": "Nacho Business\n@NachoQuixotic\n·\nJan 3, 2025",
+    "time": "2025-01-03T16:53:02.000Z",
+    "text": "Tl:Dr The world is run by human trafficking cultists using satanic ritual abuse to blackmail the rich and powerful into compliance with their goals. Rachel Chandler provides children to the elite.\n\nRachel Chandler, pictured with Bill Clinton, was a casting agent for Balenciaga."
+  },
+  {
+    "url": "https://x.com/_CRRN_/status/1886270891103072443",
+    "name": "Carrion\n@_CRRN_\n·\nFeb 2, 2025",
+    "time": "2025-02-03T04:30:00.000Z",
+    "text": ""
+  },
+  {
+    "url": "https://x.com/iluminatibot/status/1878554052977381793",
+    "name": "illuminatibot\n@iluminatibot\n·\nJan 12, 2025",
+    "time": "2025-01-12T21:26:02.000Z",
+    "text": "Here's my personal list of recommended movies and documentaries\n\nMovies:\nDark City\nDemolition Man\nEnemy of the state\nEquilibrium \nEyes Wide Shut \nFahrenheit 451 \nFrom Hell \nIdiocracy\nLogan’s Run\nMinority Report\nMy Dinner with Andre \nNetwork \nNineteen Eighty-Four \nPi\nSoylent Green"
+  },
+  {
+    "url": "https://x.com/fasc1nate/status/1877067935983763538",
+    "name": "Fascinating\n@fasc1nate\n·\nJan 8, 2025",
+    "time": "2025-01-08T19:00:44.000Z",
+    "text": "I love her excitement."
+  },
+  {
+    "url": "https://x.com/AdamCrigler/status/1873002620018933845",
+    "name": "Adam Crigler\n@AdamCrigler\n·\nDec 28, 2024",
+    "time": "2024-12-28T13:46:37.000Z",
+    "text": "I see a lot of this energy in here."
+  },
+  {
+    "url": "https://x.com/DonnieDarkened/status/1863335172642365807",
+    "name": "Donnie Discerned\n@DonnieDarkened\n·\nDec 1, 2024",
+    "time": "2024-12-01T21:31:38.000Z",
+    "text": "Alright, this is seriously wild.\n\nYou might remember hearing about the replica of the Ark of the Covenant at Mar-a-Lago.\n\nWell it turns out, it wasn’t just any replica...\n\nNot only was it meticulously crafted to match the biblical description, but after its stop at Mar-a-Lago,"
+  },
+  {
+    "url": "https://x.com/LetsGoBrando45/status/1859266833402011670",
+    "name": "Brandon Taylor Moore\n@LetsGoBrando45\n·\nNov 20, 2024",
+    "time": "2024-11-20T16:05:31.000Z",
+    "text": "Let’s break this down so people can see the TRUTH. \n\nIt’s 10-minutes long, and it will straighten out your theology."
+  },
+  {
+    "url": "https://x.com/Jasper_Truth/status/1852878096619499531",
+    "name": "Jasper Truth  \n@Jasper_Truth\n·\nNov 2, 2024",
+    "time": "2024-11-03T00:58:57.000Z",
+    "text": "11.2.24: NATIONAL GUARD DEPLOYMENTS? MILITARY, NEXT PHASE BRINGS JUSTICE, THE HARD PART IS COMING TO!"
+  },
+  {
+    "url": "https://x.com/RealBenLuigi/status/1852428476298735985",
+    "name": "Ben Luigi\n@RealBenLuigi\n·\nNov 1, 2024",
+    "time": "2024-11-01T19:12:19.000Z",
+    "text": "Nick’s freezing cold takes in the past week:\n\n1. Lord of the Rings is gay and Game of Thrones is based (even tho GOT literally has gay sex in it and LOR is a story based on the Bible)\n\n2. The gym is gay (what?)\n\n3. Tucker’s Christian conversion is fake. \n\nWhat is going on with"
+  },
+  {
+    "url": "https://x.com/Jasper_Truth/status/1852066592773017900",
+    "name": "Jasper Truth  \n@Jasper_Truth\n·\nOct 31, 2024",
+    "time": "2024-10-31T19:14:20.000Z",
+    "text": "POSSESSED: INSIDE THE TERRIFYING WORLD OF DEMONIC ENCOUNTERS!\nPRAY FOR PROTECTION BEFORE WATCHING THIS FILM!"
+  },
+  {
+    "url": "https://x.com/iluminatibot/status/1851160046777831713",
+    "name": "illuminatibot\n@iluminatibot\n·\nOct 29, 2024",
+    "time": "2024-10-29T07:12:02.000Z",
+    "text": "John Paul Rice former producer for ''The Hunger Games'' (a film that features human ''hunting parties'' predictive programming) shares his experience with Hollywood pedophiles"
+  },
+  {
+    "url": "https://x.com/iluminatibot/status/1851164841198625218",
+    "name": "illuminatibot\n@iluminatibot\n·\nOct 29, 2024",
+    "time": "2024-10-29T07:31:05.000Z",
+    "text": "Was Michael Jackson Framed?"
+  },
+  {
+    "url": "https://x.com/realstewpeters/status/1849126145263894579",
+    "name": "Stew Peters\n@realstewpeters\n·\nOct 23, 2024",
+    "time": "2024-10-23T16:30:02.000Z",
+    "text": "“Acting like a sewage pump, they were spewing their filth directly in the face of humanity. Is this really what it means to be chosen by God?”\n\n~Austrian Painter\n\n\n@bigmadlad"
+  },
+  {
+    "url": "https://x.com/myhiddenvalue/status/1849206845946409004",
+    "name": "Not A Number\n@myhiddenvalue\n·\nOct 23, 2024",
+    "time": "2024-10-23T21:50:43.000Z",
+    "text": "The government had a monetary incentive to mandate the vaccine."
+  },
+  {
+    "url": "https://x.com/Jasper_Truth/status/1848908143293780195",
+    "name": "Jasper Truth  \n@Jasper_Truth\n·\nOct 22, 2024",
+    "time": "2024-10-23T02:03:47.000Z",
+    "text": "The large numbers of undocumented migrants flooding into our nations are actually UN troops!"
+  },
+  {
+    "url": "https://x.com/RedpillDrifter/status/1847746192891138117",
+    "name": "Redpill Drifter\n@RedpillDrifter\n·\nOct 19, 2024",
+    "time": "2024-10-19T21:06:36.000Z",
+    "text": "A HISTORY OF J3WISH RITUAL BLOOD SACRIFICE\n\nDocumentary\n\nJ3wish sacrifice is not new. Canaanite/Phoenician Zionists traced back to Babylon sacrificed children to Moloch and worshipped Baal. Ultimately it's all based on esoteric sun worship of which all secret societies originate"
+  },
+  {
+    "url": "https://x.com/Jasper_Truth/status/1847725995232821456",
+    "name": "Jasper Truth  \n@Jasper_Truth\n·\nOct 19, 2024",
+    "time": "2024-10-19T19:46:21.000Z",
+    "text": "SALT AND VINEGAR REMOVES WITCHCRAFT"
+  },
+  {
+    "url": "https://x.com/myhiddenvalue/status/1847234280633880684",
+    "name": "Not A Number\n@myhiddenvalue\n·\nOct 18, 2024",
+    "time": "2024-10-18T11:12:27.000Z",
+    "text": "Makes sense when you look at the health \"experts\" of the world."
+  },
+  {
+    "url": "https://x.com/JackStr42679640/status/1845977128229384281",
+    "name": "Jack Straw\n@JackStr42679640\n·\nOct 14, 2024",
+    "time": "2024-10-14T23:56:58.000Z",
+    "text": "MILITARY TECH CAN SEE DEMONS | INTERDIMENSIONAL GOGGLES USING DICYANIN DYE\n\nDicyanin Dye: Banned\nInterdimensional Goggles (???)\n\nDicyanin Dye is illegal because it is said to have special properties when placed between two glass planes. The resulting effect gives anyone the"
+  },
+  {
+    "url": "https://x.com/TNTJohn1717/status/1845170714858471504",
+    "name": "PaulsCorner-VerseQuest\n@TNTJohn1717\n·\nOct 12, 2024",
+    "time": "2024-10-12T18:32:34.000Z",
+    "text": "Are You Awake Yet? This Is Super Interesting  "
+  },
+  {
+    "url": "https://x.com/RealAlexJones/status/1839510865680191700",
+    "name": "Alex Jones\n@RealAlexJones\n·\nSep 26, 2024",
+    "time": "2024-09-27T03:42:21.000Z",
+    "text": "Former Navy SEAL Who Took Out Osama Gives His Take On WWIII, The Trump Assassination Attempts, Bin Laden Death Conspiracies and Psychedelic Therapy"
+  },
+  {
+    "url": "https://x.com/DFreeDBZHD/status/1824873520557654460",
+    "name": "D-Free\n@DFreeDBZHD\n·\nAug 17, 2024",
+    "time": "2024-08-17T18:18:46.000Z",
+    "text": "The side of peach they don't show you "
+  },
+  {
+    "url": "https://x.com/sneako/status/1824850163716042992",
+    "name": "SNEAKO\n@sneako\n·\nAug 17, 2024",
+    "time": "2024-08-17T16:45:57.000Z",
+    "text": "I would rather brush my teeth with cow shit than kiss that fucking wall"
+  },
+  {
+    "url": "https://x.com/paratroopbrady/status/1823159887263588400",
+    "name": "Paratrooper Brady\n@paratroopbrady\n·\nAug 12, 2024",
+    "time": "2024-08-13T00:49:24.000Z",
+    "text": "Trumps Agenda!!"
+  },
+  {
+    "url": "https://x.com/DonnieDarkened/status/1819210787686138243",
+    "name": "Donnie Discerned\n@DonnieDarkened\n·\nAug 1, 2024",
+    "time": "2024-08-02T03:17:05.000Z",
+    "text": "The Real False Light Satanic Agenda is actually quite simple when broken down:\n\nStage 1: Position corrupted Jews in power: Let them reign and influence, profaning God’s name (e.g., the Rothschilds, the Illuminati, the globalists, the deep state, Zionists, Communists, etc.)"
+  },
+  {
+    "url": "https://x.com/DonnieDarkened/status/1817623175817208278",
+    "name": "Donnie Discerned\n@DonnieDarkened\n·\nJul 28, 2024",
+    "time": "2024-07-28T18:08:29.000Z",
+    "text": "A lot of people say \"God wins in the end,\" or imagine a cosmic struggle between God and Satan.\n\nBut God’s not in a struggle with anyone—He’s already won.\n\nPhrases like this reveal a troubling view held by many Christians today, elevating Satan to a status he does not possess and"
+  },
+  {
+    "url": "https://x.com/RealAlexJones/status/1813001469483749469",
+    "name": "Alex Jones\n@RealAlexJones\n·\nJul 15, 2024",
+    "time": "2024-07-16T00:03:28.000Z",
+    "text": "BREAKING: Deep State May Use Tactical Nuclear Weapon To Kill Trump— Elon Musk, Alex Jones, Tucker Carlson, & Joe Rogan To Be Hit Next"
+  },
+  {
+    "url": "https://x.com/Test73053/status/1805684395283550375",
+    "name": "Hail MLK\n@Test73053\n·\nJun 25, 2024",
+    "time": "2024-06-25T19:28:02.000Z",
+    "text": "@PatreonSupport\n \n@Patreon\n \n@jackconte\n Per your own guidelines, this breaches your TOS. Why hasn't any action been taken against \n@DickMasterson\n?"
+  },
+  {
+    "url": "https://x.com/infowars/status/1804675581096624195",
+    "name": "INFOWARS\n@infowars\n·\nJun 22, 2024",
+    "time": "2024-06-23T00:39:22.000Z",
+    "text": "Full Billy Carson Interview: #AlexJonesShow \n@4biddnKnowledge"
+  },
+  {
+    "url": "https://x.com/RealAlexJones/status/1787532989930365240",
+    "name": "Alex Jones\n@RealAlexJones\n·\nMay 6, 2024",
+    "time": "2024-05-06T17:20:50.000Z",
+    "text": "SPARS 2025 - 2028: Government Knew COVID Shots Would Kill"
+  },
+  {
+    "url": "https://x.com/RealAlexJones/status/1783969856242458835",
+    "name": "Alex Jones\n@RealAlexJones\n·\nApr 26, 2024",
+    "time": "2024-04-26T21:22:12.000Z",
+    "text": "BREAKING: American Reporter Who Infiltrated Epstein Island Exposes The NWO Master Plan — MUST WATCH!"
+  },
+  {
+    "url": "https://x.com/RealAlexJones/status/1783952205176783106",
+    "name": "Alex Jones\n@RealAlexJones\n·\nApr 26, 2024",
+    "time": "2024-04-26T20:12:04.000Z",
+    "text": "BOOM! Journalist Infiltrates Jeffery Epstein’s Pedo Island Learn More At \n@Lukewearechange"
+  },
+  {
+    "url": "https://x.com/bennyjohnson/status/1783129693580927047",
+    "name": "Benny Johnson\n@bennyjohnson\n·\nApr 24, 2024",
+    "time": "2024-04-24T13:43:42.000Z",
+    "text": "This is the most important video on the internet right now. \n\nBest 90 seconds you will spend all day is watching this MSNBC clip.\n\nSeriously."
+  },
+  {
+    "url": "https://x.com/RealAlexJones/status/1781096636824846738",
+    "name": "Alex Jones\n@RealAlexJones\n·\nApr 18, 2024",
+    "time": "2024-04-18T23:05:04.000Z",
+    "text": "Israel Puts Military Under AI Command; Robot Genocide Launched"
+  },
+  {
+    "url": "https://x.com/shackleford_777/status/1750229827695632703",
+    "name": "Rusty the White. (still unknowable)\n@shackleford_777\n·\nJan 24, 2024",
+    "time": "2024-01-24T18:51:23.000Z",
+    "text": "@palmettoarmory\n may have an X57, but I have an XM5.7..."
+  },
+  {
+    "url": "https://x.com/Timcast/status/1764029429884358768",
+    "name": "Tim Pool\n@Timcast\n·\nMar 2, 2024",
+    "time": "2024-03-02T20:46:04.000Z",
+    "text": "Right wing cope is having a full on  breakdown \n\nhahaha\n\nHomie got triggered"
+  },
+  {
+    "url": "https://x.com/ElijahSchaffer/status/1759891027174084800",
+    "name": "E\n@ElijahSchaffer\n·\nFeb 20, 2024",
+    "time": "2024-02-20T10:41:32.000Z",
+    "text": "My son eats 2 eggs per day "
+  },
+  {
+    "url": "https://x.com/ElijahSchaffer/status/1712791456560328883",
+    "name": "E\n@ElijahSchaffer\n·\nOct 13, 2023",
+    "time": "2023-10-13T11:24:40.000Z",
+    "text": "Gaza is going to get f*cked up in the next 7 days in ways you never knew was possible \n\nAll masks will be off. You’ll see just how bad it can get\n\nRepublicans will sanction it \n\nEvil bastards\n\nBookmark this. Also, I hate Hamas but that doesn’t justify anti-Palestinian war crimes"
+  }
+]
