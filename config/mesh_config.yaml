@@ -72,6 +72,61 @@ litellm:
   enabled: false              # Enable to route through LiteLLM proxy
   fallback_model: "ollama/phi3:mini"
 
+# ─── MoE-Hermes Integration ───────────────────────────────────────────────────
+# Replaces Ollama/llama3.1:8b as the primary LLM backend.
+# Sources: integrations/flash-moe + integrations/hermes-agent
+hermes_moe:
+  enabled: true               # Set false to revert to pure Ollama
+
+  # flash-moe subprocess backend (macOS/Apple Silicon only)
+  # Runs Qwen3.5-397B-A17B-4bit locally via Metal compute.
+  # Build: cd integrations/flash-moe/metal_infer && make
+  flash_moe:
+    enabled: true             # Automatically disabled on non-macOS platforms
+    binary_path: ""           # Leave empty for auto-detection in integrations/flash-moe/metal_infer/infer
+    tokens: 512               # Max tokens to generate per request
+    timeout: 120              # Subprocess timeout in seconds
+
+  # Expert pool — tried in order after flash-moe, before Ollama fallback
+  # API keys read from environment variables (NOUS_API_KEY, OPENROUTER_API_KEY)
+  experts:
+    - name: hermes-fast
+      model: "NousResearch/Hermes-3-Llama-3.1-8B"
+      provider: nous
+      base_url: "https://inference-api.nousresearch.com/v1"
+      api_key_env: NOUS_API_KEY
+      task_types: [chat, ask, summarize, translate]
+      min_complexity: 0.0
+      max_complexity: 0.45
+
+    - name: hermes-strong
+      model: "NousResearch/Hermes-3-Llama-3.1-70B"
+      provider: nous
+      base_url: "https://inference-api.nousresearch.com/v1"
+      api_key_env: NOUS_API_KEY
+      task_types: [inference, generate, code, completion, chat, ask, summarize, search, classify]
+      min_complexity: 0.45
+      max_complexity: 1.0
+
+    - name: openrouter-hermes
+      model: "nousresearch/hermes-3-llama-3.1-70b"
+      provider: openrouter
+      base_url: "https://openrouter.ai/api/v1"
+      api_key_env: OPENROUTER_API_KEY
+      task_types: [inference, chat, ask, generate, completion, code, summarize, translate, search, classify]
+      min_complexity: 0.0
+      max_complexity: 1.0
+
+  # Ollama fallback — used when all experts above are unavailable
+  ollama_fallback:
+    model: "llama3.1:8b"      # Model used for Ollama fallback (overrides tier default)
+
+  # Default agent parameters
+  temperature: 0.7
+  max_tokens: 2048
+  timeout: 60                 # Per-request timeout in seconds
+  max_concurrent: 4           # Concurrent requests per agent
+
 # ─── Task Routing ─────────────────────────────────────────────────────────────
 routing:
   default_timeout: 60         # seconds

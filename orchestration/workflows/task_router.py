@@ -23,6 +23,13 @@ from orchestration.agents.base_agent import (
     InferenceAgent,
 )
 
+# MoE-Hermes integration (replaces Ollama as primary LLM when enabled)
+try:
+    from integrations.moe_hermes_integration import create_moe_hermes_agent
+    _MOE_AVAILABLE = True
+except ImportError:
+    _MOE_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,6 +116,8 @@ class TaskRouter:
         ollama_url: str = "http://localhost:11434",
         litellm_url: str = "http://localhost:4000",
         routing_table: Optional[list[RouteRule]] = None,
+        use_hermes_moe: bool = True,
+        hermes_moe_config: Optional[dict] = None,
     ):
         self.node_tier = node_tier
         self.ollama_url = ollama_url
@@ -116,6 +125,9 @@ class TaskRouter:
         self.routing_table: dict[str, RouteRule] = {
             r.task_type: r for r in (routing_table or DEFAULT_ROUTES)
         }
+        # Enable MoE-Hermes backend when the integration is importable
+        self.use_hermes_moe = use_hermes_moe and _MOE_AVAILABLE
+        self.hermes_moe_config: dict = hermes_moe_config or {}
 
         self.registry = AgentRegistry()
         self._remote_handler: Optional[Any] = None   # injected MeshOrchestrator
@@ -155,18 +167,45 @@ class TaskRouter:
             "T3": "llama3.2:3b",
             "T4": "phi3:mini",
         }
-        model = tier_models.get(self.node_tier, "phi3:mini")
+        ollama_model = tier_models.get(self.node_tier, "phi3:mini")
 
-        inference_config = AgentConfig(
-            name="inference-primary",
-            agent_type="inference",
-            model=model,
-            ollama_url=self.ollama_url,
-            litellm_url=self.litellm_url,
-        )
-        self.registry.register(InferenceAgent(inference_config))
+        if self.use_hermes_moe:
+            # Primary: HermesMoEAgent — routes via flash-moe / Nous API / OpenRouter
+            # with Ollama as the always-available fallback.
+            cfg = self.hermes_moe_config
+            inference_agent = create_moe_hermes_agent(
+                name="inference-primary",
+                ollama_url=self.ollama_url,
+                ollama_model=cfg.get("ollama_model", ollama_model),
+                system_prompt=cfg.get(
+                    "system_prompt",
+                    "You are a helpful AI assistant in the MYCONEX mesh.",
+                ),
+                temperature=cfg.get("temperature", 0.7),
+                max_tokens=cfg.get("max_tokens", 2048),
+                timeout=cfg.get("timeout", 60.0),
+                max_concurrent=cfg.get("max_concurrent", 4),
+                flash_moe_binary=cfg.get("flash_moe_binary"),
+            )
+            logger.info(
+                "[router] provisioned HermesMoEAgent (flash-moe=%s, hermes=%s)",
+                inference_agent._moe.flash_moe.available,
+                _MOE_AVAILABLE,
+            )
+        else:
+            # Fallback: original Ollama-backed InferenceAgent
+            inference_config = AgentConfig(
+                name="inference-primary",
+                agent_type="inference",
+                model=ollama_model,
+                ollama_url=self.ollama_url,
+                litellm_url=self.litellm_url,
+            )
+            inference_agent = InferenceAgent(inference_config)
 
-        # Only provision embedding agent on T1–T3
+        self.registry.register(inference_agent)
+
+        # Embedding agent: always backed by Ollama (nomic-embed-text)
         if self.node_tier in ("T1", "T2", "T3"):
             embed_config = AgentConfig(
                 name="embedding-primary",

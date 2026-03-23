@@ -119,10 +119,22 @@ async def run_node(config: dict, mode: str) -> None:
     await orchestrator.start()
 
     # 2. Start task router
+    moe_cfg = config.get("hermes_moe", {})
+    use_moe = moe_cfg.get("enabled", True)
+    hermes_moe_config = {
+        "ollama_model": moe_cfg.get("ollama_fallback", {}).get("model", "llama3.1:8b"),
+        "temperature":  moe_cfg.get("temperature", 0.7),
+        "max_tokens":   moe_cfg.get("max_tokens", 2048),
+        "timeout":      moe_cfg.get("timeout", 60.0),
+        "max_concurrent": moe_cfg.get("max_concurrent", 4),
+        "flash_moe_binary": moe_cfg.get("flash_moe", {}).get("binary_path") or None,
+    }
     router = TaskRouter(
         node_tier=orchestrator._hardware.tier,
         ollama_url=config.get("ollama", {}).get("url", "http://localhost:11434"),
         litellm_url=config.get("litellm", {}).get("url", "http://localhost:4000"),
+        use_hermes_moe=use_moe,
+        hermes_moe_config=hermes_moe_config,
     )
     router.set_remote_handler(orchestrator)
     await router.start()
@@ -296,9 +308,16 @@ def ask(ctx, prompt, model, tier):
         from core.classifier.hardware import HardwareDetector
 
         hw = HardwareDetector().detect()
+        moe_cfg = cfg.get("hermes_moe", {})
         router = TaskRouter(
             node_tier=hw.tier,
             ollama_url=cfg.get("ollama", {}).get("url", "http://localhost:11434"),
+            use_hermes_moe=moe_cfg.get("enabled", True),
+            hermes_moe_config={
+                "ollama_model": moe_cfg.get("ollama_fallback", {}).get("model", "llama3.1:8b"),
+                "temperature": moe_cfg.get("temperature", 0.7),
+                "max_tokens": moe_cfg.get("max_tokens", 2048),
+            },
         )
         await router.start()
 

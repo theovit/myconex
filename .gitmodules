@@ -1,0 +1,6 @@
+[submodule "integrations/flash-moe"]
+	path = integrations/flash-moe
+	url = https://github.com/danveloper/flash-moe
+[submodule "integrations/hermes-agent"]
+	path = integrations/hermes-agent
+	url = https://github.com/NousResearch/hermes-agent

@@ -57,6 +57,18 @@ ai = [
     "openai>=1.30.0",
     "sentence-transformers>=2.7.0",
 ]
+# hermes-moe: dependencies for the flash-moe / hermes-agent integration layer
+# Install with: pip install -e ".[hermes-moe]"
+hermes-moe = [
+    # OpenAI-compatible client used by hermes-agent and for Nous/OpenRouter calls
+    "openai>=1.30.0",
+    # hermes-agent core deps (lightweight subset used by the integration)
+    "tenacity>=8.0.0",
+    "fire>=0.6.0",
+    "jinja2>=3.1.0",
+    # flash-moe model-prep scripts (numpy for repack_experts_2bit.py)
+    "numpy>=1.24.0",
+]
 
 [project.scripts]
 myconex = "main:cli"
