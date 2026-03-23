@@ -46,6 +46,7 @@ import json
 import logging
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -117,11 +118,12 @@ class _ChannelState:
     request without recreating the AIAgent.
     """
 
-    __slots__ = ("history", "tool_cb", "legacy_ctx")
+    __slots__ = ("history", "tool_cb", "clarify", "legacy_ctx")
 
     def __init__(self) -> None:
         self.history: List[Dict[str, Any]] = []
         self.tool_cb: Optional[Callable[..., None]] = None
+        self.clarify: Optional[_DiscordClarify] = None  # set in _get_or_create_agent
         self.legacy_ctx: Optional[AgentContext] = None  # TaskRouter fallback only
 
 
@@ -167,6 +169,73 @@ class _StreamingUpdater:
         asyncio.run_coroutine_threadsafe(
             _safe_edit(self._message, display), self._loop
         )
+
+
+# ─── Clarify Callback ─────────────────────────────────────────────────────────
+
+class _DiscordClarify:
+    """
+    Bridges the hermes-agent clarify tool to Discord.
+
+    Called synchronously from the AIAgent worker thread.  Posts a question
+    (with optional numbered choices) to the Discord channel and blocks until
+    the user replies, then returns the reply text.
+
+    Timeout defaults to 5 minutes — after which the agent receives a
+    "[no reply — proceed with best guess]" sentinel so it doesn't hang forever.
+    """
+
+    TIMEOUT = 300  # seconds
+
+    def __init__(
+        self,
+        channel: "discord.abc.Messageable",
+        author_id: int,
+        loop: asyncio.AbstractEventLoop,
+    ) -> None:
+        self._channel = channel
+        self._author_id = author_id
+        self._loop = loop
+        # Set while waiting for a reply; cleared by on_message hook
+        self._pending: Optional[threading.Event] = None
+        self._answer: Optional[str] = None
+
+    def __call__(self, question: str, choices: Optional[List[str]] = None) -> str:
+        """Signature required by hermes-agent: (question, choices) -> str."""
+        lines = [f"❓ **{question}**"]
+        if choices:
+            for i, c in enumerate(choices, 1):
+                lines.append(f"  **{i}.** {c}")
+            lines.append("\n_Reply with a number or type your answer._")
+
+        evt = threading.Event()
+        self._pending = evt
+        self._answer = None
+
+        asyncio.run_coroutine_threadsafe(
+            self._channel.send("\n".join(lines)), self._loop
+        )
+
+        evt.wait(timeout=self.TIMEOUT)
+        self._pending = None
+
+        if self._answer is None:
+            return "[no reply — proceed with best guess]"
+
+        # If the user typed a number and choices were offered, map it back
+        if choices:
+            stripped = self._answer.strip()
+            if stripped.isdigit():
+                idx = int(stripped) - 1
+                if 0 <= idx < len(choices):
+                    return choices[idx]
+        return self._answer
+
+    def receive(self, text: str) -> None:
+        """Call from on_message when a reply arrives while waiting."""
+        if self._pending and not self._pending.is_set():
+            self._answer = text
+            self._pending.set()
 
 
 # ─── Discord Gateway ──────────────────────────────────────────────────────────
@@ -283,6 +352,14 @@ class DiscordGateway:
                     return
                 if self._allow_bots == "mentions" and not client.user.mentioned_in(message):
                     return
+
+            # Feed the reply to any pending clarify callback first
+            key = _msg_key(message)
+            state = self._states.get(key)
+            if state and state.clarify and state.clarify._pending:
+                state.clarify.receive(message.content or "")
+                return  # consumed — don't also route as a new conversation turn
+
             await self._handle_message(message)
 
     # ── Slash Commands ────────────────────────────────────────────────────────
@@ -480,6 +557,8 @@ class DiscordGateway:
                         attachment_urls=attachment_urls,
                         status_msg=status_msg,
                         loop=loop,
+                        channel=channel,
+                        author_id=message.author.id,
                     )
                     if result.get("failed") or result.get("error"):
                         error = result.get("error") or "Agent returned an error."
@@ -556,17 +635,20 @@ class DiscordGateway:
         attachment_urls: List[str],
         status_msg: Optional["discord.Message"],
         loop: asyncio.AbstractEventLoop,
+        channel: "discord.abc.Messageable",
+        author_id: int,
     ) -> Dict[str, Any]:
         """
         Execute AIAgent.run_conversation() inside asyncio.to_thread().
 
         Wires up:
-          • Streaming updater — edits status_msg as tokens arrive
-          • Tool progress cb  — updates status_msg with active tool name
-          • Attachment context — appends URLs to the user message
+          • Streaming updater   — edits status_msg as tokens arrive
+          • Tool progress cb    — updates status_msg with active tool name
+          • Clarify callback    — asks the user a question via Discord and waits
+          • Attachment context  — appends URLs to the user message
         """
         state = self._get_or_create_state(key)
-        agent = self._get_or_create_agent(key, state)
+        agent = self._get_or_create_agent(key, state, channel, author_id, loop)
 
         # Streaming live-edit
         streamer = _StreamingUpdater(status_msg, loop) if status_msg else None
@@ -612,7 +694,13 @@ class DiscordGateway:
         Pass history_override=[] for one-shot /ask (no history).
         """
         state = self._get_or_create_state(key)
-        agent = self._get_or_create_agent(key, state)
+        # Slash commands run without a live channel reference — clarify not supported here
+        if state.clarify is None and hasattr(state, "clarify"):
+            pass  # no clarify available; agent will skip clarify tool calls
+        agent = self._agents.get(key)
+        if agent is None:
+            # No agent yet; can't create one without channel — fall back gracefully
+            return {"final_response": "No active session. Send a message first, then use /ask."}
         history = history_override if history_override is not None else list(state.history)
         result = agent.run_conversation(
             user_message=content,
@@ -632,14 +720,24 @@ class DiscordGateway:
             self._states[key] = _ChannelState()
         return self._states[key]
 
-    def _get_or_create_agent(self, key: str, state: _ChannelState) -> "AIAgent":  # type: ignore[return]
+    def _get_or_create_agent(
+        self,
+        key: str,
+        state: _ChannelState,
+        channel: "discord.abc.Messageable",
+        author_id: int,
+        loop: asyncio.AbstractEventLoop,
+    ) -> "AIAgent":  # type: ignore[return]
         """
         Lazily create one AIAgent per channel key.
 
-        tool_progress_callback closes over state.tool_cb (a mutable slot) so
-        each message can redirect tool output to its own status_msg without
+        tool_progress_callback and clarify_callback both close over mutable
+        slots on state so each message can redirect callbacks without
         recreating the agent.
         """
+        # Always refresh the clarify instance (cheap) so it has the right channel
+        state.clarify = _DiscordClarify(channel, author_id, loop)
+
         if key not in self._agents:
             base_url, api_key, model, api_mode = self._resolve_runtime()
             self._agents[key] = AIAgent(  # type: ignore[call-arg]
@@ -654,8 +752,14 @@ class DiscordGateway:
                 tool_progress_callback=(
                     lambda tn, ap: state.tool_cb(tn, ap) if state.tool_cb else None
                 ),
+                clarify_callback=(
+                    lambda q, c=None: state.clarify(q, c) if state.clarify else q
+                ),
             )
             logger.debug("[discord] new AIAgent for %s (model=%s api_mode=%s)", key, model, api_mode)
+        else:
+            # Agent exists but clarify_callback must point at fresh instance
+            self._agents[key].clarify_callback = state.clarify
         return self._agents[key]
 
     def _reset_channel(self, key: str) -> None:
