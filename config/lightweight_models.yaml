@@ -1,0 +1,286 @@
+# MYCONEX Lightweight Model Library
+# Source: https://dev.to/jaipalsingh/15-best-lightweight-language-models-worth-running-in-2026-297g
+# Updated: 2026-03-24
+#
+# Each entry includes:
+#   ollama_tag   — use with: ollama pull <tag>
+#   hf_repo      — use with: huggingface-cli download <repo>
+#   gguf_repo    — GGUF quantized version on HuggingFace (for llama-cpp / gguf_infer tool)
+#   size_gb      — approximate disk size at Q4 quantization
+#   min_ram_gb   — minimum system RAM to run comfortably
+#   context_k    — context window in thousands of tokens
+#   license      — software license
+#   tags         — capabilities: reasoning, vision, audio, code, multilingual, fast
+
+models:
+
+  # ── Sub-1B ──────────────────────────────────────────────────────────────────
+
+  - id: qwen3-0.6b
+    name: "Qwen3-0.6B"
+    params: "0.6B"
+    size_gb: 0.4
+    min_ram_gb: 2
+    context_k: 32
+    license: apache-2.0
+    tags: [multilingual, fast, ultra-lightweight]
+    description: >
+      Smallest Qwen3 variant. Same 119-language support and dual thinking/fast
+      modes as larger siblings. Fits on almost any hardware.
+    ollama_tag: "qwen3:0.6b"
+    hf_repo: "Qwen/Qwen3-0.6B-Instruct"
+    gguf_repo: "Qwen/Qwen3-0.6B-Instruct-GGUF"
+
+  # ── 1–2B ────────────────────────────────────────────────────────────────────
+
+  - id: tinyllama-1.1b
+    name: "TinyLlama 1.1B"
+    params: "1.1B"
+    size_gb: 0.7
+    min_ram_gb: 2
+    context_k: 2
+    license: apache-2.0
+    tags: [fast, community]
+    description: >
+      Community-trained on 3T tokens. Narrowest context (2K) in the list —
+      best for short, snappy tasks on severely constrained hardware.
+    ollama_tag: "tinyllama:1.1b"
+    hf_repo: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    gguf_repo: "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
+
+  - id: deepseek-r1-1.5b
+    name: "DeepSeek-R1 Distill 1.5B"
+    params: "1.5B"
+    size_gb: 1.1
+    min_ram_gb: 3
+    context_k: 128
+    license: mit
+    tags: [reasoning, chain-of-thought]
+    description: >
+      Chain-of-thought reasoning distilled from a much larger model.
+      Punches above its weight for logical tasks. Note: high vulnerability
+      to adversarial prompts — do not expose to untrusted input directly.
+    ollama_tag: "deepseek-r1:1.5b"
+    hf_repo: "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    gguf_repo: "bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF"
+
+  - id: qwen3-1.7b
+    name: "Qwen3-1.7B"
+    params: "1.7B"
+    size_gb: 1.2
+    min_ram_gb: 3
+    context_k: 32
+    license: apache-2.0
+    tags: [multilingual, reasoning, fast]
+    description: >
+      Mid-point Qwen3 variant. Dual thinking/fast modes, 119 languages,
+      GQA architecture. Good step up from 0.6B without large RAM increase.
+    ollama_tag: "qwen3:1.7b"
+    hf_repo: "Qwen/Qwen3-1.7B-Instruct"
+    gguf_repo: "Qwen/Qwen3-1.7B-Instruct-GGUF"
+
+  # ── 3–4B ────────────────────────────────────────────────────────────────────
+
+  - id: phi4-mini
+    name: "Phi-4 Mini"
+    params: "3.8B"
+    size_gb: 2.5
+    min_ram_gb: 4
+    context_k: 128
+    license: mit
+    tags: [reasoning, code, stem, long-context]
+    description: >
+      Microsoft. Trained on synthetic data and textbook-quality text.
+      Strong on STEM and structured reasoning. 128K context is exceptional
+      at this size. Good T3/T4 candidate.
+    ollama_tag: "phi4-mini:3.8b"
+    hf_repo: "microsoft/Phi-4-mini-instruct"
+    gguf_repo: "bartowski/Phi-4-mini-instruct-GGUF"
+
+  - id: phi4-mini-reasoning
+    name: "Phi-4 Mini Reasoning"
+    params: "3.8B"
+    size_gb: 2.5
+    min_ram_gb: 4
+    context_k: 128
+    license: mit
+    tags: [reasoning, chain-of-thought, rl-trained]
+    description: >
+      Reasoning-focused fine-tune of Phi-4 Mini using reinforcement learning.
+      Produces chain-of-thought traces. Best-in-class reasoning for sub-4B.
+    ollama_tag: "phi4-mini-reasoning:3.8b"
+    hf_repo: "microsoft/Phi-4-mini-reasoning"
+    gguf_repo: "bartowski/Phi-4-mini-reasoning-GGUF"
+
+  - id: smollm3-3b
+    name: "SmolLM3-3B"
+    params: "3B"
+    size_gb: 2.0
+    min_ram_gb: 4
+    context_k: 128
+    license: apache-2.0
+    tags: [fast, open, long-context]
+    description: >
+      HuggingFace. Trained on 11T tokens with fully open methodology.
+      Competitive with larger models on many benchmarks. Apache 2.0 with
+      no usage restrictions.
+    ollama_tag: "smollm3:3b"
+    hf_repo: "HuggingFaceTB/SmolLM3-3B"
+    gguf_repo: "HuggingFaceTB/SmolLM3-3B-GGUF"
+
+  - id: stablelm-zephyr-3b
+    name: "StableLM Zephyr 3B"
+    params: "3B"
+    size_gb: 2.0
+    min_ram_gb: 4
+    context_k: 4
+    license: stabilityai-noncommercial
+    tags: [instruction-tuned, dpo-aligned]
+    description: >
+      StabilityAI. DPO-aligned instruction model. Short 4K context limits
+      use cases but it runs very fast. Non-commercial license — check before
+      deploying in production.
+    ollama_tag: "stablelm-zephyr:3b"
+    hf_repo: "stabilityai/stablelm-zephyr-3b"
+    gguf_repo: "TheBloke/stablelm-zephyr-3b-GGUF"
+
+  - id: qwen3-4b
+    name: "Qwen3-4B"
+    params: "4B"
+    size_gb: 2.6
+    min_ram_gb: 4
+    context_k: 32
+    license: apache-2.0
+    tags: [multilingual, reasoning, fast, gqa]
+    description: >
+      Solid mid-range Qwen3. Same dual thinking/fast modes, 119 languages,
+      GQA architecture. Recommended T3 model for myconex mesh nodes.
+    ollama_tag: "qwen3:4b"
+    hf_repo: "Qwen/Qwen3-4B-Instruct"
+    gguf_repo: "Qwen/Qwen3-4B-Instruct-GGUF"
+
+  - id: gemma3-4b
+    name: "Gemma 3 4B"
+    params: "4B"
+    size_gb: 2.6
+    min_ram_gb: 6
+    context_k: 128
+    license: gemma
+    tags: [vision, multilingual, long-context]
+    description: >
+      Google. Native vision support (images in context), 128K context,
+      35+ languages. Best multimodal option at sub-4B. Requires slightly
+      more RAM than other 4B models.
+    ollama_tag: "gemma3:4b"
+    hf_repo: "google/gemma-3-4b-it"
+    gguf_repo: "bartowski/gemma-3-4b-it-GGUF"
+
+  - id: gemma3n-e2b
+    name: "Gemma 3n E2B"
+    params: "5B (2B active)"
+    size_gb: 3.0
+    min_ram_gb: 6
+    context_k: 32
+    license: gemma
+    tags: [vision, audio, multimodal, per-layer-embedding]
+    description: >
+      Google. Per-layer embedding architecture — only 2B parameters active
+      at any time despite 5B total. Supports text, images, and audio (up to
+      30-second clips). Most capable multimodal option in this list.
+    ollama_tag: "gemma3n:e2b"
+    hf_repo: "google/gemma-3n-E2B-it"
+    gguf_repo: "bartowski/gemma-3n-E2B-it-GGUF"
+
+  # ── 7–9B ────────────────────────────────────────────────────────────────────
+
+  - id: mistral-7b
+    name: "Mistral 7B"
+    params: "7B"
+    size_gb: 4.1
+    min_ram_gb: 8
+    context_k: 32
+    license: apache-2.0
+    tags: [fast, gqa, sliding-window-attention, no-restrictions]
+    description: >
+      Mistral AI. Grouped-query + sliding window attention make it faster
+      than raw param count suggests. Apache 2.0 with zero usage restrictions.
+      Solid T2 workhorse.
+    ollama_tag: "mistral:7b"
+    hf_repo: "mistralai/Mistral-7B-Instruct-v0.3"
+    gguf_repo: "TheBloke/Mistral-7B-Instruct-v0.3-GGUF"
+
+  - id: llama31-8b
+    name: "Llama 3.1 8B Instruct"
+    params: "8B"
+    size_gb: 4.7
+    min_ram_gb: 8
+    context_k: 128
+    license: llama3.1
+    tags: [multilingual, long-context, tool-calling]
+    description: >
+      Meta. 15T+ token training, 128K context, 8 language support, strong
+      tool-calling. Note: license restricts use in products with 700M+
+      monthly active users. Current ollama_fallback model in myconex.
+    ollama_tag: "llama3.1:8b"
+    hf_repo: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    gguf_repo: "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF"
+
+  - id: deepseek-r1-8b
+    name: "DeepSeek-R1 Distill 8B"
+    params: "8B"
+    size_gb: 5.0
+    min_ram_gb: 8
+    context_k: 128
+    license: mit
+    tags: [reasoning, chain-of-thought]
+    description: >
+      Full-size DeepSeek-R1 distillation. Better reasoning than 1.5B variant
+      with same caveat about adversarial robustness. MIT license.
+    ollama_tag: "deepseek-r1:8b"
+    hf_repo: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    gguf_repo: "bartowski/DeepSeek-R1-Distill-Llama-8B-GGUF"
+
+  - id: qwen3-8b
+    name: "Qwen3-8B"
+    params: "8B"
+    size_gb: 5.2
+    min_ram_gb: 8
+    context_k: 128
+    license: apache-2.0
+    tags: [multilingual, reasoning, long-context, dual-mode]
+    description: >
+      Flagship lightweight Qwen3. 119 languages, 128K context, dual
+      thinking/fast modes. Thinking mode roughly doubles token usage.
+      Strong all-rounder T2 model for myconex mesh.
+    ollama_tag: "qwen3:8b"
+    hf_repo: "Qwen/Qwen3-8B-Instruct"
+    gguf_repo: "Qwen/Qwen3-8B-Instruct-GGUF"
+
+  - id: glm4-9b
+    name: "GLM-4-9B-0414"
+    params: "9B"
+    size_gb: 6.2
+    min_ram_gb: 10
+    context_k: 32
+    license: glm4
+    tags: [code, function-calling, artifacts]
+    description: >
+      Zhipu AI. Specialises in code generation, function calling, and
+      SVG/HTML artifact output. 32K context. Heaviest model in this list —
+      requires 10GB RAM. Best suited to T1/T2 nodes with spare VRAM.
+    ollama_tag: "glm4:9b"
+    hf_repo: "THUDM/glm-4-9b-chat-0414"
+    gguf_repo: "bartowski/glm-4-9b-chat-0414-GGUF"
+
+
+# ─── Recommended tier assignments for myconex mesh ────────────────────────────
+# These suggest replacing / augmenting the defaults in mesh_config.yaml
+#
+# T4 (edge, 2GB RAM):  qwen3-0.6b  or  tinyllama-1.1b
+# T3 (CPU, 4GB RAM):   qwen3-4b    or  phi4-mini
+# T2 (8B GPU):         qwen3-8b    or  llama31-8b  (current default)
+# T1 (70B GPU):        use cloud experts (hermes-strong / openrouter-hermes)
+#
+# Best reasoning (any tier): phi4-mini-reasoning, deepseek-r1-1.5b / deepseek-r1-8b
+# Best multimodal:           gemma3-4b (vision), gemma3n-e2b (vision+audio)
+# Most unrestricted license: mistral-7b, smollm3-3b, qwen3-* (all Apache 2.0)

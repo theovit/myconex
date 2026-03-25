@@ -265,13 +265,15 @@ class VectorStore:
                     search_filters = Filter(must=conditions)
 
             # Perform search
-            results = self.client.search(
+            # query_points is the current API (client.search removed in qdrant-client 1.7+)
+            qr = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_embedding,
+                query=query_embedding,
                 limit=limit,
                 query_filter=search_filters,
                 score_threshold=score_threshold,
             )
+            results = qr.points
 
             # Convert to SearchResult objects
             search_results = []
@@ -491,15 +493,17 @@ class EmbeddingClient:
         """Generate embedding for text using Ollama."""
         try:
             response = await self.client.post(
-                f"{self.ollama_url}/api/embeddings",
+                f"{self.ollama_url}/api/embed",
                 json={
                     "model": self.model,
-                    "prompt": text,
+                    "input": text,
                 }
             )
             response.raise_for_status()
             data = response.json()
-            return data["embedding"]
+            # /api/embed returns {"embeddings": [[...]]} (list of lists)
+            embs = data.get("embeddings") or data.get("embedding")
+            return embs[0] if isinstance(embs[0], list) else embs
 
         except Exception as e:
             logger.error(f"[embedding] failed to generate embedding: {e}")

@@ -4,239 +4,382 @@
 
 MYCONEX is a self-organizing, peer-to-peer AI mesh that lets heterogeneous machines (from Raspberry Pis to GPU workstations) collaborate as a single intelligent system. Like a mycelium network, every node contributes what it can and routes work to where it runs best.
 
+Built on Recursive Language Model (RLM) principles: the primary agent manages its own context, decomposes complex tasks, and delegates to specialists — with every interaction feeding back into a persistent self-improvement loop.
+
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        MYCONEX MESH                         │
-│                                                             │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐              │
-│  │  T1 Node │    │  T2 Node │    │  T3 Node │  ...         │
-│  │ GPU 80GB │◄──►│ GPU 16GB │◄──►│ CPU-Only │              │
-│  │ 70B model│    │ 8B model │    │ 3B model │              │
-│  └────┬─────┘    └────┬─────┘    └────┬─────┘              │
-│       │               │               │                     │
-│       └───────────────┼───────────────┘                     │
-│                       │                                     │
-│              ┌────────▼────────┐                            │
-│              │   NATS Bus      │  pub/sub, request/reply    │
-│              │   mDNS Discovery│  _ai-mesh._tcp             │
-│              └────────┬────────┘                            │
-│                       │                                     │
-│         ┌─────────────┼─────────────┐                       │
-│         ▼             ▼             ▼                       │
-│      Redis         Qdrant        Ollama                     │
-│    (state/cache) (vector DB)  (LLM runtime)                 │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                          MYCONEX Mesh                               │
+│                                                                     │
+│  ┌──────────────┐   NATS pub/sub   ┌──────────────┐               │
+│  │  T1 Node     │◄────────────────►│  T2 Node     │               │
+│  │  (70B GPU)   │                  │  (8B GPU)    │               │
+│  │              │                  │              │               │
+│  │  RLMAgent    │                  │  RLMAgent    │               │
+│  │  ┌─────────┐ │                  │  ┌─────────┐ │               │
+│  │  │MoE Chain│ │                  │  │MoE Chain│ │               │
+│  │  │flash-moe│ │                  │  │Nous 8B  │ │               │
+│  │  │Nous 70B │ │                  │  │Ollama   │ │               │
+│  │  └─────────┘ │                  │  └─────────┘ │               │
+│  └──────────────┘                  └──────────────┘               │
+│           ▲                                ▲                        │
+│           │         Redis (state)          │                        │
+│           └───────────────────────────────┘                        │
+│                                                                     │
+│  ┌─────────────────────────────────────────┐                       │
+│  │              Agent Roster               │                       │
+│  │  Engineering │ Research │ Security      │                       │
+│  │  Data        │ DevOps   │ QA            │                       │
+│  └─────────────────────────────────────────┘                       │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐             │
+│  │ Discord  │  │ REST API │  │  Autonomous Loop      │             │
+│  │ Gateway  │  │ :8765    │  │  (self-optimization)  │             │
+│  └──────────┘  └──────────┘  └──────────────────────┘             │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Node Tiers
+---
 
-| Tier | Hardware | Role | Default Model |
-|------|----------|------|---------------|
-| **T1** | GPU > 24 GB VRAM | Large inference, training, coordinator | llama3.1:70b |
-| **T2** | GPU 8–24 GB VRAM | Mid inference, embedding, fine-tuning | llama3.1:8b |
-| **T3** | CPU ≥16 cores or ≥16 GB RAM | Orchestration, embedding, relay | llama3.2:3b |
-| **T4** | Raspberry Pi / < 8 GB RAM | Edge sensor, lightweight inference | phi3:mini |
+## Key Concepts
+
+### Recursive Language Models (RLM)
+`RLMAgent` manages its own context via a persistent Python REPL and spawns sub-instances to delegate token-heavy sub-tasks. Complexity scoring (`_score_complexity()`) drives the decomposition threshold — tasks scoring above **0.60** are automatically decomposed into parallel sub-tasks.
+
+### Agent-as-Employee Pattern
+Agents have roles (`MANAGER`, `WORKER`, `SPECIALIST`). Managers decompose and delegate; workers execute and report back. The `delegate()` / `delegate_parallel()` API on `BaseAgent` routes tasks through `TaskRouter`.
+
+### Mixture-of-Experts Expert Chain
+```
+flash-moe (C/Metal) → Nous 8B → Nous 70B → OpenRouter → Ollama fallback
+```
+Each expert is tried in order; the first successful result is returned.
+
+### Tier-Aware Routing
+Hardware is auto-detected at startup. Tiers:
+| Tier | Hardware | Primary Model |
+|------|----------|---------------|
+| T1   | 70B+ GPU | Nous-Hermes 70B |
+| T2   | 8B GPU   | Nous-Hermes 8B  |
+| T3   | CPU only | Ollama fallback |
+| T4   | Edge     | BitNet 1-bit    |
+
+---
+
+## Project Layout
+
+```
+myconex/
+├── __main__.py                    # Entry point (all modes)
+├── main.py                        # Legacy worker/mesh node launcher
+├── config.py                      # Unified configuration system
+├── CLAUDE.md                      # Claude Code behavioral rules
+├── lessons.md                     # Self-improvement lesson log
+│
+├── orchestration/
+│   ├── agents/
+│   │   ├── base_agent.py          # BaseAgent + AgentRole + delegate()
+│   │   ├── rlm_agent.py           # RLMAgent — top-level orchestrator
+│   │   └── context_manager.py     # ContextFrame, SessionMemory, PersistentMemory
+│   ├── workflows/
+│   │   └── task_router.py         # TaskRouter — agent lifecycle + routing
+│   └── agent_roster.py            # Division-based 6-division roster
+│
+├── core/
+│   ├── gateway/
+│   │   ├── agentic_tools.py       # Tool registry + handlers
+│   │   ├── python_repl.py         # PersistentPythonREPL, REPLPool, CodebaseIndex
+│   │   └── discord_gateway.py     # Discord bot → RLMAgent wiring
+│   ├── autonomous_loop.py         # 4-phase self-optimization loop
+│   ├── discovery/                 # mDNS mesh discovery
+│   └── messaging/                 # NATS pub/sub client
+│
+├── tools/
+│   ├── sandbox_executor.py        # Resource-limited subprocess execution
+│   ├── document_processor.py      # PDF/HTML/text ingestion pipeline
+│   └── intel_aggregator.py        # Multi-source intelligence gathering
+│
+├── integrations/
+│   ├── moe_hermes_integration.py  # HermesMoEAgent (MoE primary)
+│   ├── flash-moe/                 # C/Metal flash-moe inference
+│   └── hermes-agent/              # Nous-Hermes GGUF agent
+│
+└── tests/
+    └── test_myconex.py            # Comprehensive test suite
+```
 
 ---
 
 ## Quick Start
 
-### 1. Auto-Install (SPORE)
-
-Run the SPORE installer on any Linux machine to auto-onboard it:
+### Prerequisites
 
 ```bash
-sudo bash spore/scripts/install.sh
+python3 --version  # 3.10+
+
+# Optional — install for full feature set
+pip install PyYAML httpx pdfminer.six feedparser discord.py nats-py redis
 ```
 
-The installer will:
-- Detect GPU/RAM/CPU
-- Classify the node into T1–T4
-- Install Docker, Ollama, Python deps
-- Register via mDNS (`_ai-mesh._tcp`)
-- Pull the appropriate LLM for this tier
-- Create a systemd service
-
-### 2. Manual Setup
+### Install
 
 ```bash
-# Clone and install deps
-pip install -r config/requirements.txt
-
-# Start the service stack
-cd services && docker compose up -d
-
-# Run the node
-python main.py --mode api
+git clone <repo>
+cd myconex
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### 3. Check hardware tier
+### Run (CLI mode)
 
 ```bash
-python main.py status
-# or
-python core/classifier/hardware.py
+python3 -m myconex --mode cli
 ```
 
-### 4. Ask a question
+Available commands in the CLI REPL:
+
+| Command | Description |
+|---------|-------------|
+| `/status` | Show agent and router status |
+| `/memory <query>` | Query persistent memory |
+| `/tools` | List available tools |
+| `/repl <code>` | Execute Python in the persistent REPL |
+| `/web <url>` | Fetch and summarize a webpage |
+| `/search <query>` | Search the MYCONEX codebase |
+| `/reset` | Reset the current session |
+| `/verbose` | Toggle verbose logging |
+| `/quit` | Exit |
+
+### Run (other modes)
 
 ```bash
-python main.py ask "Explain fungal networks in 2 sentences"
-```
+# Autonomous self-optimization loop
+python3 -m myconex --mode autonomous --interval 30
 
----
+# Discord bot with RLMAgent
+python3 -m myconex --mode discord
 
-## Project Structure
+# REST API server
+python3 -m myconex --mode api
 
-```
-myconex/
-├── main.py                          # Entry point + CLI
-├── config/
-│   ├── mesh_config.yaml             # Default mesh configuration
-│   └── requirements.txt             # Python dependencies
-├── core/
-│   ├── classifier/
-│   │   └── hardware.py              # Hardware detection + tier classification
-│   ├── discovery/
-│   │   └── mesh_discovery.py        # mDNS peer discovery (python-zeroconf)
-│   ├── messaging/
-│   │   └── nats_client.py           # NATS pub/sub client
-│   └── coordinator/
-│       └── orchestrator.py          # Mesh coordinator, task routing, health
-├── orchestration/
-│   ├── agents/
-│   │   └── base_agent.py            # BaseAgent, InferenceAgent, EmbeddingAgent
-│   └── workflows/
-│       └── task_router.py           # Local task → agent routing
-├── services/
-│   ├── docker-compose.yml           # NATS, Redis, Qdrant, Ollama, LiteLLM
-│   ├── nats/nats.conf               # NATS server config
-│   ├── qdrant/config.yaml           # Qdrant config
-│   └── litellm/config.yaml          # LiteLLM model routing config
-├── spore/
-│   └── scripts/
-│       └── install.sh               # SPORE auto-installer
-├── mobile/                          # Mobile/web client (future)
-├── docs/                            # Documentation
-└── tests/                           # Test suite
-```
+# Background worker node (mesh)
+python3 -m myconex --mode worker
 
----
-
-## Services
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| NATS | 4222 | Message bus (pub/sub, request/reply) |
-| NATS Monitoring | 8222 | NATS HTTP dashboard |
-| Redis | 6379 | State cache, session store |
-| Qdrant | 6333 | Vector DB for semantic search |
-| Ollama | 11434 | Local LLM runtime |
-| LiteLLM | 4000 | LLM proxy / router |
-| MYCONEX API | 8765 | Mesh REST gateway |
-
-Start all services:
-```bash
-cd services && docker compose up -d
-```
-
----
-
-## API Endpoints
-
-```
-GET  /health          Node health check
-GET  /status          Full node + mesh status
-GET  /peers           Discovered mesh peers
-GET  /agents          Running agents and their status
-POST /chat            Chat with the mesh
-POST /task            Submit a routed task
-```
-
-### Chat example
-
-```bash
-curl -X POST http://localhost:8765/chat \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is a distributed system?"}'
-```
-
-### Submit task to specific tier
-
-```bash
-curl -X POST http://localhost:8765/task \
-  -H "Content-Type: application/json" \
-  -d '{"type": "inference", "tier": "T1", "payload": {"prompt": "Write a poem"}}'
-```
-
----
-
-## Adding a Custom Agent
-
-```python
-from orchestration.agents.base_agent import BaseAgent, AgentConfig, AgentResult
-
-class MyAgent(BaseAgent):
-    def can_handle(self, task_type: str) -> bool:
-        return task_type == "my-task"
-
-    async def handle_task(self, task_id, task_type, payload, context=None):
-        result = await self.chat([
-            {"role": "user", "content": payload.get("prompt", "")}
-        ])
-        return AgentResult(task_id=task_id, agent_name=self.name,
-                           success=True, output={"response": result})
-
-# Register with the router
-config = AgentConfig(name="my-agent", agent_type="my-task")
-agent = MyAgent(config)
-await agent.start()
-router.register_agent(agent)
+# Full stack (worker + api + discord)
+python3 -m myconex --mode full
 ```
 
 ---
 
 ## Configuration
 
-Edit `config/mesh_config.yaml` to tune:
-- NATS/Redis/Qdrant/Ollama endpoints
-- Tier-to-model mapping
-- Task routing rules
-- Heartbeat intervals
-- API settings
+Configuration is resolved in this priority order (highest wins):
 
-Node-specific overrides live in `/etc/myconex/node.yaml` (created by SPORE installer).
+1. Environment variables (`MYCONEX_*` prefix)
+2. `.env` file (project root)
+3. `config/mesh_config.yaml`
+4. Dataclass defaults
 
-Environment variable overrides:
+### Common Environment Variables
 
-| Variable | Config key |
-|----------|-----------|
-| `NATS_URL` | `nats.url` |
-| `REDIS_URL` | `redis.url` |
-| `QDRANT_URL` | `qdrant.url` |
-| `OLLAMA_URL` | `ollama.url` |
-| `LITELLM_URL` | `litellm.url` |
-| `MYCONEX_NODE` | `node.name` |
-| `MYCONEX_TIER` | `node.tier` |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OLLAMA_URL` | `http://localhost:11434` | Ollama inference endpoint |
+| `LLAMACPP_URL` | — | llama.cpp server URL (enables llamacpp backend) |
+| `LMSTUDIO_URL` | — | LM Studio URL (enables lmstudio backend) |
+| `LITELLM_URL` | `http://localhost:4000` | LiteLLM proxy URL |
+| `MYCONEX_BACKEND` | `ollama` | Default backend: `ollama`, `llamacpp`, `lmstudio`, `litellm` |
+| `DISCORD_BOT_TOKEN` | — | Discord bot token (enables Discord gateway) |
+| `DISCORD_REQUIRE_MENTION` | `false` | Only respond when mentioned |
+| `DISCORD_AUTO_THREAD` | `false` | Auto-create threads for responses |
+| `NATS_URL` | `nats://localhost:4222` | NATS messaging URL |
+| `REDIS_URL` | `redis://localhost:6379` | Redis state store URL |
+| `QDRANT_URL` | `http://localhost:6333` | Qdrant vector store URL |
+| `MYCONEX_NODE` | auto | Node name in the mesh |
+| `MYCONEX_TIER` | auto | Force tier: `T1`–`T4` |
+| `MYCONEX_CONTEXT_BUDGET` | `16384` | Total token budget for RLM context |
+| `MYCONEX_MEMORY_DIR` | `~/.myconex/memory` | Persistent memory directory |
+| `MYCONEX_MEMORY_NAMESPACE` | `global` | Memory namespace |
+| `MYCONEX_API_HOST` | `127.0.0.1` | API server host |
+| `MYCONEX_API_PORT` | `8765` | API server port |
+| `MYCONEX_LOG_LEVEL` | `INFO` | Logging level |
+
+### Programmatic Config
+
+```python
+from config import load_config
+
+cfg = load_config()
+print(cfg.backend.ollama.url)
+print(cfg.discord.enabled)
+print(cfg.tokens.context_budget)
+```
 
 ---
 
-## Design Philosophy
+## Agent Tools
 
-MYCONEX is inspired by mycelium — the underground fungal network that:
-- Has no central brain, yet coordinates complex behavior
-- Routes nutrients (tasks) to where they're needed
-- Grows and heals dynamically
-- Connects distant organisms into a shared network
+Tools are registered in `core/gateway/agentic_tools.py` and available to all agents:
 
-Each MYCONEX node is a **spore**: self-contained, capable of autonomous operation, but exponentially more powerful when connected to peers.
+| Tool | Description |
+|------|-------------|
+| `python_repl` | Execute Python in a persistent, session-keyed namespace |
+| `web_read` | Fetch a URL and return structured title/headings/text |
+| `codebase_search` | Search the MYCONEX codebase by keyword |
+| `gguf_infer` | Run inference on a local GGUF model via llama-cpp-python |
+| `memory_store` | Store a fact in persistent cross-session memory |
+| `memory_retrieve` | Retrieve relevant memories by query |
+| `delegate` | Delegate a sub-task to a specialized agent |
+
+---
+
+## Agent Divisions
+
+The `AgentRoster` organizes agents into 6 divisions:
+
+| Division | Specialties |
+|----------|-------------|
+| **Engineering** | Python, Go, APIs, architecture, refactoring |
+| **Research** | Literature review, summarization, analysis |
+| **Security** | Threat modeling, auditing, pentesting |
+| **Data** | ML, statistics, pandas, SQL, pipelines |
+| **DevOps** | CI/CD, containers, infrastructure, monitoring |
+| **QA** | Testing, coverage, regression, fuzzing |
+
+---
+
+## Autonomous Optimization Loop
+
+When run with `--mode autonomous`, MYCONEX performs a continuous 4-phase self-improvement cycle:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Optimization Cycle                     │
+│                                                         │
+│  1. ANALYSE   LLM identifies improvement opportunity   │
+│       ↓       in the MYCONEX codebase                  │
+│  2. SANDBOX   Generates patch script, runs it in       │
+│       ↓       resource-limited subprocess              │
+│  3. VERIFY    LLM evaluates sandbox output for         │
+│       ↓       correctness and safety                   │
+│  4. RECORD    Appends lesson to lessons.md,            │
+│               writes JSONL audit log                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+- Audit log: `~/.myconex/audit.jsonl`
+- Metrics: `~/.myconex/metrics.json`
+- Lessons: `lessons.md` (project root)
+- Reflection digest: every N cycles (configurable via `reflect_every_n`)
+
+---
+
+## Sandboxed Execution
+
+`SandboxExecutor` provides resource-limited subprocess execution for agent-generated code:
+
+```python
+from tools.sandbox_executor import SandboxConfig, SandboxExecutor
+
+executor = SandboxExecutor(
+    default_config=SandboxConfig(
+        timeout_s=30.0,
+        max_memory_mb=512,
+        max_processes=32,
+    )
+)
+
+result = await executor.run_python("import math; print(math.pi)")
+print(result.output)   # 3.141592653589793
+
+# Parallel execution
+results = await executor.run_parallel_python([
+    "print('task 1')",
+    "print('task 2')",
+    "print('task 3')",
+])
+```
+
+> **Note:** The sandbox applies `resource.setrlimit` for memory and process limits on Linux/macOS. It is not a container boundary — for stronger isolation, wrap in Docker or nsjail.
+
+---
+
+## Document Ingestion
+
+```python
+from tools.document_processor import DocumentProcessor
+
+proc = DocumentProcessor()
+result = await proc.process("/path/to/paper.pdf")
+print(result.to_agent_payload(max_chars=4000))
+```
+
+Supported formats: `.pdf` (pdfminer.six or pdftotext CLI fallback), `.html`, `.htm`, `.txt`, `.md`
+
+Scientific papers get automatic section extraction: Abstract, Introduction, Methods, Results, References.
+
+---
+
+## Intelligence Aggregation
+
+```python
+from tools.intel_aggregator import IntelAggregator, IntelSource
+
+agg = IntelAggregator()
+report = await agg.gather([
+    IntelSource(type="web",   uri="https://example.com/article", label="article"),
+    IntelSource(type="file",  uri="/data/report.txt",            label="report"),
+    IntelSource(type="shell", uri="cat /var/log/system.log",     label="logs"),
+    IntelSource(type="rss",   uri="https://feeds.example.com/",  label="feed"),
+])
+
+for r in report.results:
+    print(f"[{r.label}] {r.content[:200]}")
+```
+
+Source types: `web`, `api`, `file`, `rss`, `search`, `db`, `shell`
+
+---
+
+## Running Tests
+
+```bash
+cd myconex
+python3 -m pytest tests/test_myconex.py -v
+
+# Or directly
+python3 tests/test_myconex.py
+```
+
+Test groups:
+- **A** — BaseAgent: delegation, routing, complexity scoring
+- **B** — PersistentPythonREPL: state persistence, safety
+- **C** — ContextFrame: token budgeting, pruning, hierarchy
+- **D** — SessionMemory: pattern extraction, scoring
+- **E** — DocumentProcessor: HTML/text parsing
+- **F** — IntelAggregator: multi-source gathering
+- **G** — AgentRoster: division management, routing
+- **H** — SandboxExecutor: isolation, timeout, resource limits
+- **I** — Config: load/override priority
+- **J** — RLMAgent: task handling, decomposition (mocked LLM)
+
+---
+
+## Self-Improvement
+
+MYCONEX tracks its own behavioral lessons in `lessons.md`. After any correction or confirmed improvement, Claude Code appends a new rule — governed by `CLAUDE.md` at the project root.
+
+The self-improvement loop:
+1. Claude Code detects a correction or confirmed approach
+2. Identifies the class of issue (not just the instance)
+3. Writes a concise prevention rule to `lessons.md`
+4. Applies the rule immediately in the current session
 
 ---
 
 ## License
 
-MIT
+See `LICENSE` file.

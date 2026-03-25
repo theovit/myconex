@@ -53,11 +53,12 @@ ollama:
   url: "http://localhost:11434"
 
   # Models per tier — installer pulls the appropriate one
+  # Updated 2026-03-24: aligned with config/lightweight_models.yaml
   tier_models:
-    T1: "llama3.1:70b"
-    T2: "llama3.1:8b"
-    T3: "llama3.2:3b"
-    T4: "phi3:mini"
+    T1: "llama3.1:70b"       # cloud experts preferred; local fallback only
+    T2: "qwen3:8b"           # was llama3.1:8b — 119 langs, 128K ctx, Apache 2.0
+    T3: "qwen3:4b"           # was llama3.2:3b — better quality, same RAM (4GB)
+    T4: "qwen3:0.6b"         # was phi3:mini   — 400MB, runs on anything
 
   # Always available (loaded on all nodes if resources allow)
   embedding_model: "nomic-embed-text"
@@ -117,9 +118,13 @@ hermes_moe:
       min_complexity: 0.0
       max_complexity: 1.0
 
-  # Ollama fallback — used when all experts above are unavailable
+  # Ollama fallback — used when all cloud experts are unavailable.
+  # llama3.1:8b is used here because it correctly handles OpenAI-format tool
+  # calling (structured tool_calls / tool role messages).  hermes3:8b gets
+  # confused by this format because it was trained on Hermes XML <tool_call>
+  # tags — use it only via the cloud API path where the server handles format.
   ollama_fallback:
-    model: "llama3.1:8b"      # Model used for Ollama fallback (overrides tier default)
+    model: "llama3.1:8b"
 
   # Default agent parameters
   temperature: 0.7
@@ -215,3 +220,51 @@ discord:
 
   # Bot interaction
   allow_bots: none            # none | all — whether the bot responds to other bots
+
+# ─── Hermes-Agent Integration ─────────────────────────────────────────────────
+hermes:
+  enabled: true               # Wire hermes-agent into MYCONEX
+  load_tools: true            # Register hermes's 40+ tools into shared registry
+
+  # Model selection (leave blank to use HERMES_MODEL / OPENROUTER_API_KEY env vars)
+  model: ""                   # e.g. "anthropic/claude-opus-4-6" or "nous/hermes-3"
+  base_url: ""                # e.g. "https://openrouter.ai/api/v1"
+  api_key: ""                 # Set via OPENROUTER_API_KEY or ANTHROPIC_API_KEY env var
+
+  # Toolset selection (empty = all available toolsets)
+  enabled_toolsets: []        # e.g. ["web", "terminal", "file"]
+  disabled_toolsets: []       # e.g. ["browser", "voice"]
+
+  # Agent behaviour
+  max_iterations: 90          # Max tool-call iterations per conversation turn
+  save_trajectories: false    # Save full conversation trajectories to ~/.hermes/
+  skip_memory: false          # Skip Honcho memory (set true if Honcho not configured)
+  idle_ttl_s: 1800            # Evict idle hermes sessions after 30 min
+
+  # Multi-platform gateway (optional)
+  # Set gateway_config_path to a hermes gateway.yaml to enable Telegram, Slack, etc.
+  gateway_config_path: ""     # e.g. "~/.hermes/gateway.yaml"
+
+# ─── MCP (Model Context Protocol) Servers ─────────────────────────────────────
+mcp:
+  enabled: false              # Set true and add servers below to enable MCP
+
+  # Example MCP servers (uncomment and configure as needed):
+  servers: []
+  #servers:
+  #  - name: filesystem
+  #    command: npx
+  #    args: ["-y", "@modelcontextprotocol/server-filesystem", "/home"]
+  #    enabled: true
+  #
+  #  - name: github
+  #    command: npx
+  #    args: ["-y", "@modelcontextprotocol/server-github"]
+  #    env:
+  #      GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"
+  #    enabled: true
+  #
+  #  - name: memory
+  #    command: npx
+  #    args: ["-y", "@modelcontextprotocol/server-memory"]
+  #    enabled: true

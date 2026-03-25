@@ -30,6 +30,13 @@ try:
 except ImportError:
     _MOE_AVAILABLE = False
 
+# Phase 4: RLMAgent — preferred primary agent when available
+try:
+    from orchestration.agents.rlm_agent import create_rlm_agent
+    _RLM_AVAILABLE = True
+except ImportError:
+    _RLM_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -115,19 +122,30 @@ class TaskRouter:
         node_tier: str = "T3",
         ollama_url: str = "http://localhost:11434",
         litellm_url: str = "http://localhost:4000",
+        llamacpp_url: str = "http://localhost:8080",   # llama.cpp server
+        lmstudio_url: str = "http://localhost:1234",   # LM Studio server
+        default_backend: str = "ollama",               # "ollama"|"llamacpp"|"lmstudio"|"litellm"
         routing_table: Optional[list[RouteRule]] = None,
         use_hermes_moe: bool = True,
         hermes_moe_config: Optional[dict] = None,
+        use_rlm: bool = True,           # prefer RLMAgent over plain HermesMoEAgent
+        rlm_config: Optional[dict] = None,
     ):
         self.node_tier = node_tier
         self.ollama_url = ollama_url
         self.litellm_url = litellm_url
+        self.llamacpp_url = llamacpp_url
+        self.lmstudio_url = lmstudio_url
+        self.default_backend = default_backend
         self.routing_table: dict[str, RouteRule] = {
             r.task_type: r for r in (routing_table or DEFAULT_ROUTES)
         }
         # Enable MoE-Hermes backend when the integration is importable
         self.use_hermes_moe = use_hermes_moe and _MOE_AVAILABLE
         self.hermes_moe_config: dict = hermes_moe_config or {}
+        # Prefer RLMAgent when available (Phase 4)
+        self.use_rlm = use_rlm and _RLM_AVAILABLE
+        self.rlm_config: dict = rlm_config or {}
 
         self.registry = AgentRegistry()
         self._remote_handler: Optional[Any] = None   # injected MeshOrchestrator
@@ -140,6 +158,8 @@ class TaskRouter:
 
         for agent in self.registry.all:
             await agent.start()
+            # Inject router so agents can delegate sub-tasks
+            agent.set_router(self)
 
         self._running = True
         logger.info(
@@ -169,8 +189,38 @@ class TaskRouter:
         }
         ollama_model = tier_models.get(self.node_tier, "phi3:mini")
 
-        if self.use_hermes_moe:
-            # Primary: HermesMoEAgent — routes via flash-moe / Nous API / OpenRouter
+        if self.use_rlm:
+            # Primary: RLMAgent — full recursive reasoning with delegation,
+            # REPL tools, context management, and persistent memory.
+            cfg = self.rlm_config
+            inference_agent = create_rlm_agent(
+                name="inference-primary",
+                ollama_url=self.ollama_url,
+                ollama_model=cfg.get("ollama_model", ollama_model),
+                llamacpp_url=self.llamacpp_url,
+                lmstudio_url=self.lmstudio_url,
+                backend=cfg.get("backend", self.default_backend),
+                system_prompt=cfg.get(
+                    "system_prompt",
+                    "You are a helpful AI assistant in the MYCONEX mesh.",
+                ),
+                temperature=cfg.get("temperature", 0.7),
+                max_tokens=cfg.get("max_tokens", 4096),
+                timeout=cfg.get("timeout", 120.0),
+                max_concurrent=cfg.get("max_concurrent", 4),
+                context_budget=cfg.get("context_budget", 16384),
+                max_delegation_depth=cfg.get("max_delegation_depth", 4),
+                memory_namespace=cfg.get("memory_namespace", "global"),
+                enable_self_optimization=cfg.get("enable_self_optimization", True),
+                flash_moe_binary=cfg.get("flash_moe_binary"),
+            )
+            logger.info(
+                "[router] provisioned RLMAgent (moe=%s, self-opt=%s)",
+                _MOE_AVAILABLE,
+                cfg.get("enable_self_optimization", True),
+            )
+        elif self.use_hermes_moe:
+            # Secondary: HermesMoEAgent — routes via flash-moe / Nous API / OpenRouter
             # with Ollama as the always-available fallback.
             cfg = self.hermes_moe_config
             inference_agent = create_moe_hermes_agent(
@@ -193,13 +243,16 @@ class TaskRouter:
                 _MOE_AVAILABLE,
             )
         else:
-            # Fallback: original Ollama-backed InferenceAgent
+            # Fallback: original Ollama-backed InferenceAgent (or alt backend)
             inference_config = AgentConfig(
                 name="inference-primary",
                 agent_type="inference",
                 model=ollama_model,
                 ollama_url=self.ollama_url,
                 litellm_url=self.litellm_url,
+                llamacpp_url=self.llamacpp_url,
+                lmstudio_url=self.lmstudio_url,
+                backend=self.default_backend,
             )
             inference_agent = InferenceAgent(inference_config)
 
@@ -212,6 +265,7 @@ class TaskRouter:
                 agent_type="embedding",
                 model="nomic-embed-text",
                 ollama_url=self.ollama_url,
+                backend="ollama",   # embeddings always via Ollama
             )
             self.registry.register(EmbeddingAgent(embed_config))
 
@@ -323,6 +377,8 @@ class TaskRouter:
 
     def register_agent(self, agent: BaseAgent) -> None:
         self.registry.register(agent)
+        # Inject router so newly registered agents can also delegate
+        agent.set_router(self)
 
 
 # ─── CLI Demo ─────────────────────────────────────────────────────────────────

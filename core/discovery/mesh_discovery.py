@@ -284,7 +284,7 @@ class MeshDiscovery:
             server=f"{hostname}.local.",
         )
 
-        await self._zeroconf.async_register_service(self._service_info)
+        await self._zeroconf.async_register_service(self._service_info, allow_name_change=True)
         logger.info(f"[discovery] registered: {self.service_name} @ {addresses}:{self.api_port}")
 
     @property

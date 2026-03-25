@@ -10,6 +10,12 @@ from .base_agent import (
     create_agent,
 )
 
+try:
+    from .hermes_agent import HermesAgent, HermesAgentConfig, create_hermes_agent
+    _HERMES_AVAILABLE = True
+except ImportError:
+    _HERMES_AVAILABLE = False
+
 __all__ = [
     "BaseAgent",
     "InferenceAgent",
@@ -19,4 +25,7 @@ __all__ = [
     "AgentResult",
     "AgentState",
     "create_agent",
+    "HermesAgent",
+    "HermesAgentConfig",
+    "create_hermes_agent",
 ]

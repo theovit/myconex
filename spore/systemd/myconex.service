@@ -1,41 +1,23 @@
 [Unit]
-Description=MYCONEX Distributed AI Mesh Node
-After=network.target docker.service
-Requires=docker.service
-Wants=network-online.target
+Description=MYCONEX Discord AI Mesh Node
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
-User=myconex
-Group=myconex
+User=techno-shaman
+Group=techno-shaman
 WorkingDirectory=/home/techno-shaman/myconex
 Environment=PYTHONPATH=/home/techno-shaman/myconex
-Environment=MYCONEX_CONFIG=/home/techno-shaman/myconex/config/mesh_config.yaml
-Environment=MYCONEX_LOG_LEVEL=INFO
-Environment=MYCONEX_NODE_ID=%H
-ExecStart=/usr/bin/python3 /home/techno-shaman/myconex/main.py run
+EnvironmentFile=/home/techno-shaman/myconex/.env
+ExecStart=/usr/bin/python3 /home/techno-shaman/myconex/main.py --mode full
 ExecReload=/bin/kill -HUP $MAINPID
-Restart=always
-RestartSec=5
-TimeoutStartSec=300
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=60
 TimeoutStopSec=30
 
-# Security settings
-NoNewPrivileges=yes
-PrivateTmp=yes
-ProtectSystem=strict
-ReadWritePaths=/home/techno-shaman/myconex /var/log/myconex
-ProtectHome=yes
-PrivateDevices=yes
-ProtectKernelTunables=yes
-ProtectControlGroups=yes
-
-# Resource limits
-MemoryLimit=2G
-CPUQuota=200%
-
-# Logging
+# Logging → journalctl -u myconex -f
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=myconex
