@@ -68,8 +68,8 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 try:
-    from fastapi import FastAPI, Form, Request
-    from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+    from fastapi import FastAPI, File, Form, Request, UploadFile
+    from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
     _FASTAPI_OK = True
 except ImportError:
     _FASTAPI_OK = False
@@ -990,12 +990,17 @@ def _page(title: str, body: str, active: str = "") -> str:
         f'<!doctype html><html lang="en"><head>'
         f'<meta charset="utf-8">'
         f'<meta name="viewport" content="width=device-width,initial-scale=1">'
+        f'<meta name="theme-color" content="#07070f">'
+        f'<meta name="apple-mobile-web-app-capable" content="yes">'
+        f'<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
+        f'<link rel="manifest" href="/manifest.json">'
         f'<title>{title} — MYCONEX</title>'
         f'{_CSS}{_JS}'
         f'</head>'
         f'<body>'
         f'{_sidebar(active)}'
         f'<div class="main">{body}</div>'
+        f'<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script>'
         f'</body></html>'
     )
 
@@ -1147,6 +1152,7 @@ if _FASTAPI_OK:
             '<div class="tab-bar">'
             '<button class="tab active" data-tab="tab-url">URL</button>'
             '<button class="tab" data-tab="tab-text">Text / Note</button>'
+            '<button class="tab" data-tab="tab-doc">Document</button>'
             '</div>'
 
             '<div class="tab-content active" id="tab-url">'
@@ -1173,9 +1179,44 @@ if _FASTAPI_OK:
             '<div class="submit-result" id="text-result"></div>'
             '</div>'
             '</div>'
+
+            '<div class="tab-content" id="tab-doc">'
+            '<div class="form-block">'
+            '<label class="form-label" for="doc-title">Title (optional)</label>'
+            '<input type="text" id="doc-title" placeholder="My document" style="margin-bottom:12px">'
+            '<label class="form-label" for="doc-file">File</label>'
+            '<input type="file" id="doc-file" accept=".pdf,.epub,.txt,.md,.rst,.csv" '
+            'style="background:var(--surface2);border:1px solid var(--border);color:var(--text);'
+            'padding:10px 14px;border-radius:8px;font-size:13px;width:100%;margin-bottom:12px">'
+            '<div class="form-hint">Supported: PDF, EPUB, TXT, MD, RST, CSV — up to 20 chunks per document.</div>'
+            '<div style="margin-top:12px">'
+            '<button class="btn btn-teal" onclick="submitDoc()">Ingest Document</button>'
+            '</div>'
+            '<div class="submit-result" id="doc-result"></div>'
+            '</div>'
+            '</div>'
             '</div>'
 
             '<script>document.addEventListener("DOMContentLoaded", () => initTabs("tab-url"));</script>'
+            '<script>'
+            'async function submitDoc() {'
+            '  const fileInput = document.getElementById("doc-file");'
+            '  const title     = document.getElementById("doc-title").value.trim();'
+            '  const result    = document.getElementById("doc-result");'
+            '  if (!fileInput.files.length) { result.textContent="Select a file first."; result.className="submit-result err"; result.style.display="block"; return; }'
+            '  result.textContent = "Ingesting… (this may take a minute)";'
+            '  result.className = "submit-result ok"; result.style.display="block";'
+            '  const fd = new FormData();'
+            '  fd.append("file", fileInput.files[0]);'
+            '  if (title) fd.append("title", title);'
+            '  try {'
+            '    const r = await fetch("/api/submit/doc", {method:"POST", body:fd});'
+            '    const d = await r.json();'
+            '    result.textContent = d.message || (r.ok ? "Done." : "Error.");'
+            '    result.className = "submit-result " + (r.ok && d.ok !== false ? "ok" : "err");'
+            '  } catch(e) { result.textContent="Network error: "+e; result.className="submit-result err"; }'
+            '}'
+            '</script>'
         )
         return _page("Submit", body, "submit")
 
@@ -1699,6 +1740,107 @@ if _FASTAPI_OK:
     @app.get("/api/sysmon")
     async def api_sysmon() -> JSONResponse:
         return JSONResponse(_sysmon_data())
+
+    @app.post("/api/submit/doc")
+    async def api_submit_doc(file: UploadFile = File(...), title: str = Form("")) -> JSONResponse:
+        try:
+            from integrations.document_ingester import ingest_document
+            data  = await file.read()
+            fname = file.filename or "upload.txt"
+            result = await ingest_document(data, fname, title=title or "")
+            if result.get("ok"):
+                return JSONResponse({"ok": True, "message":
+                    f"Ingested '{result['title']}' — {result['chunks']} chunk(s), "
+                    f"{len(result.get('topics', []))} topic(s)"})
+            else:
+                return JSONResponse({"ok": False, "message": result.get("error", "Unknown error")}, status_code=400)
+        except Exception as exc:
+            return JSONResponse({"ok": False, "message": str(exc)}, status_code=500)
+
+    @app.get("/metrics", response_class=PlainTextResponse)
+    async def metrics() -> str:
+        """Prometheus-compatible text metrics."""
+        lines: list[str] = []
+
+        def g(name: str, value: float, help_text: str = "", labels: str = "") -> None:
+            if help_text:
+                lines.append(f"# HELP {name} {help_text}")
+                lines.append(f"# TYPE {name} gauge")
+            tag = "{" + labels + "}" if labels else ""
+            lines.append(f"{name}{tag} {value}")
+
+        # Ingester item counts
+        for src, fname in [("email","email_insights.json"),("youtube","youtube_insights.json"),
+                           ("rss","rss_insights.json"),("podcast","podcast_insights.json"),
+                           ("github","github_insights.json"),("document","doc_insights.json")]:
+            data = _load(_BASE / fname, [])
+            g("myconex_ingested_total", len(data),
+              f"Total items ingested from {src}", f'source="{src}"')
+
+        # Feedback
+        fb = _feedback_stats()
+        g("myconex_feedback_positive", fb["positive"], "Positive feedback reactions")
+        g("myconex_feedback_negative", fb["negative"], "Negative feedback reactions")
+
+        # RAG gaps
+        try:
+            from core.rag_repair import get_open_gaps
+            g("myconex_rag_gaps_open", len(get_open_gaps()), "Open RAG knowledge gaps")
+        except Exception:
+            pass
+
+        # Signals
+        sigs = _load(_BASE / "signals_log.json", [])
+        g("myconex_signals_total", len(sigs), "Total cross-source signals detected")
+
+        # System
+        if _PSUTIL_OK:
+            import psutil
+            g("myconex_cpu_percent", psutil.cpu_percent(interval=0.1), "CPU usage percent")
+            g("myconex_mem_percent", psutil.virtual_memory().percent, "Memory usage percent")
+            g("myconex_disk_percent", psutil.disk_usage("/").percent, "Disk usage percent")
+
+        return "\n".join(lines) + "\n"
+
+    @app.get("/manifest.json")
+    async def pwa_manifest() -> JSONResponse:
+        return JSONResponse({
+            "name": "MYCONEX",
+            "short_name": "MYCONEX",
+            "description": "Personal AI knowledge mesh dashboard",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#07070f",
+            "theme_color": "#07070f",
+            "icons": [
+                {"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⊛</text></svg>",
+                 "sizes": "any", "type": "image/svg+xml"}
+            ],
+            "categories": ["productivity", "utilities"],
+        })
+
+    @app.get("/sw.js", response_class=PlainTextResponse)
+    async def service_worker() -> str:
+        return """
+const CACHE = 'myconex-v1';
+const OFFLINE_URLS = ['/'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(OFFLINE_URLS)));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
+});
+"""
 
 else:
     app = None  # type: ignore[assignment]

@@ -110,8 +110,33 @@ THREAD_STATE_FILE   = Path.home() / ".myconex" / "discord_threads.json"
 HISTORY_DIR         = Path.home() / ".myconex" / "chat_histories"
 RAG_MAX_CHARS       = 1400  # Max chars of knowledge-base context injected per turn
 RAG_RESULTS         = 3     # Number of Qdrant results to inject
-FEEDBACK_FILE       = Path.home() / ".myconex" / "feedback_log.jsonl"
+FEEDBACK_FILE        = Path.home() / ".myconex" / "feedback_log.jsonl"
 _GATEWAY_MEMORY_FILE = Path.home() / ".myconex" / "memory.json"
+_USERS_DIR           = Path.home() / ".myconex" / "users"
+
+
+def _user_base(discord_user_id: int | str) -> Path:
+    """Return the per-user data directory, creating it on first call."""
+    p = _USERS_DIR / str(discord_user_id)
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def _load_user_memory(discord_user_id: int | str) -> str:
+    """Load per-user key-value memory as a formatted prompt block."""
+    try:
+        mem_file = _user_base(discord_user_id) / "memory.json"
+        if not mem_file.exists():
+            return ""
+        data = json.loads(mem_file.read_text())
+        if not isinstance(data, dict) or not data:
+            return ""
+        lines = ["[Stored facts about this user:]"]
+        for key, val in list(data.items())[:30]:
+            lines.append(f"  {key}: {str(val)[:200]}")
+        return "\n".join(lines)
+    except Exception:
+        return ""
 
 # Added on top of SOUL.md (loaded from ~/.hermes/SOUL.md).
 # Does NOT re-declare identity — SOUL.md owns that.
@@ -1520,6 +1545,82 @@ class DiscordGateway:
             except Exception as exc:
                 await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
 
+        @tree.command(name="brief", description="Trigger the morning briefing right now")
+        async def slash_brief(interaction: discord.Interaction) -> None:
+            await interaction.response.defer(ephemeral=False)
+            try:
+                from core.briefing import build_briefing_embed
+                embed_data = build_briefing_embed()
+                if embed_data:
+                    emb = discord.Embed.from_dict(embed_data)
+                    await interaction.followup.send(embed=emb)
+                else:
+                    await interaction.followup.send("Nothing to report right now.")
+            except Exception as exc:
+                await interaction.followup.send(f"⚠️ {exc}")
+
+        @tree.command(name="distill", description="Run the memory distiller now and show the summary")
+        async def slash_distill(interaction: discord.Interaction) -> None:
+            await interaction.response.defer(ephemeral=True)
+            try:
+                from core.memory.distiller import MemoryDistiller
+                distiller = MemoryDistiller()
+                result = await distiller.distill_once()
+                lines = [f"**Memory Distillation**"]
+                for source, data in result.items():
+                    if isinstance(data, dict):
+                        themes = data.get("dominant_themes") or []
+                        traj   = data.get("trajectory", "")
+                        if themes:
+                            lines.append(f"\n**{source}** — themes: {', '.join(themes[:4])}")
+                        if traj:
+                            lines.append(f"  ↗ {traj[:120]}")
+                summary = "\n".join(lines) or "No entries to distill yet."
+                await interaction.followup.send(summary[:2000], ephemeral=True)
+            except Exception as exc:
+                await interaction.followup.send(f"⚠️ {exc}", ephemeral=True)
+
+        @tree.command(name="sysmon", description="Show live system resource stats")
+        async def slash_sysmon(interaction: discord.Interaction) -> None:
+            try:
+                import psutil, time
+                cpu  = psutil.cpu_percent(interval=0.3)
+                mem  = psutil.virtual_memory()
+                disk = psutil.disk_usage("/")
+                uptime_s = int(time.time() - psutil.boot_time())
+                h, rem = divmod(uptime_s, 3600); m = rem // 60
+                uptime = f"{h}h {m}m" if h else f"{m}m"
+                def bar(pct):
+                    filled = int(pct / 5)
+                    return "█" * filled + "░" * (20 - filled)
+                embed = discord.Embed(title="⚙️ System Monitor", color=0x00c8a0)
+                embed.add_field(name=f"CPU  {cpu:.0f}%",  value=f"`{bar(cpu)}`",  inline=False)
+                embed.add_field(name=f"RAM  {mem.percent:.0f}%  ({mem.used//1<<30}GB/{mem.total//1<<30}GB)",
+                                value=f"`{bar(mem.percent)}`", inline=False)
+                embed.add_field(name=f"Disk {disk.percent:.0f}%  ({disk.used//1<<30}GB/{disk.total//1<<30}GB)",
+                                value=f"`{bar(disk.percent)}`", inline=False)
+                embed.set_footer(text=f"Uptime: {uptime}")
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            except ImportError:
+                await interaction.response.send_message(
+                    "psutil not installed — run `pip install psutil`", ephemeral=True)
+            except Exception as exc:
+                await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
+
+        @tree.command(name="search", description="Search the web and return top results")
+        @discord.app_commands.describe(query="What to search for")
+        async def slash_search(interaction: discord.Interaction, query: str) -> None:
+            await interaction.response.defer()
+            try:
+                from integrations.search_provider import web_search, format_results
+                results = await web_search(query)
+                text = format_results(results)
+                embed = discord.Embed(title=f"🔍 {query[:80]}", description=text[:4000],
+                                      color=0x4a8fff)
+                await interaction.followup.send(embed=embed)
+            except Exception as exc:
+                await interaction.followup.send(f"⚠️ {exc}")
+
     # ── Core Message Handler ──────────────────────────────────────────────────
 
     async def _handle_message(self, message: discord.Message) -> None:
@@ -1865,8 +1966,10 @@ class DiscordGateway:
             system_prompt = system_prompt + "\n\n" + lessons
 
         # Pre-load stored memories so the agent knows facts without needing a tool call.
-        # Injected before RAG so personal facts appear first.
-        mem_ctx = _load_memory_for_prompt()
+        # Per-user memory takes precedence over shared memory.
+        user_mem_ctx = _load_user_memory(author_id)
+        shared_mem_ctx = _load_memory_for_prompt()
+        mem_ctx = user_mem_ctx or shared_mem_ctx
         if mem_ctx:
             system_prompt = system_prompt + "\n\n" + mem_ctx
 

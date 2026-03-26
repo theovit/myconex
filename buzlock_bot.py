@@ -204,6 +204,44 @@ async def main() -> None:
     except Exception as exc:
         logger.warning("Could not start signal detector: %s", exc)
 
+    # 6n. Start GitHub ingester
+    github_task = None
+    if os.getenv("GITHUB_REPOS") or os.getenv("GITHUB_USERNAME"):
+        try:
+            from integrations.github_ingester import GitHubIngester
+            gh_ingester = GitHubIngester()
+            github_task = asyncio.create_task(_supervise("github_ingester", gh_ingester.run_forever))
+            logger.info("GitHub ingester started — interval=%sm", os.getenv("GITHUB_INGEST_INTERVAL", "60"))
+        except Exception as exc:
+            logger.warning("Could not start GitHub ingester: %s", exc)
+    else:
+        logger.info("GitHub ingester skipped — set GITHUB_REPOS or GITHUB_USERNAME")
+
+    # 6o. Start push notifier health watchdog
+    watchdog_task = None
+    if os.getenv("NTFY_URL") or (os.getenv("PUSHOVER_TOKEN") and os.getenv("PUSHOVER_USER")):
+        try:
+            from integrations.notifier import run_health_watchdog
+            watchdog_task = asyncio.create_task(
+                _supervise("health_watchdog", lambda: run_health_watchdog(interval_minutes=15))
+            )
+            logger.info("Health watchdog started — push alerts active")
+        except Exception as exc:
+            logger.warning("Could not start health watchdog: %s", exc)
+
+    # 6p. Start weekly digest scheduler
+    digest_task = None
+    try:
+        from core.digest import schedule_weekly_digest
+        from core.gateway.discord_gateway import DiscordGateway as _DG
+        _post_fn = getattr(gateway, "_post_digest", None)
+        if _post_fn:
+            digest_task = asyncio.create_task(schedule_weekly_digest(_post_fn))
+            logger.info("Weekly digest scheduler started — day=%s hour=%s UTC",
+                        os.getenv("DIGEST_DAY", "6"), os.getenv("DIGEST_HOUR", "9"))
+    except Exception as exc:
+        logger.warning("Could not start weekly digest scheduler: %s", exc)
+
     # 6l. Start plugin loader with hot-reload watcher
     plugin_loader = None
     try:
@@ -364,6 +402,14 @@ async def main() -> None:
             await dashboard_task
         except asyncio.CancelledError:
             pass
+
+    for _t in (github_task, watchdog_task, digest_task):
+        if _t:
+            _t.cancel()
+            try:
+                await _t
+            except asyncio.CancelledError:
+                pass
 
     if telegram_task:
         telegram_task.cancel()
