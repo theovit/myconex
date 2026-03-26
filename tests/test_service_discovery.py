@@ -318,5 +318,63 @@ class TestResolveServiceUrls(unittest.TestCase):
             asyncio.run(run())
 
 
+from config import apply_discovered_urls, MyconexConfig
+
+
+class TestApplyDiscoveredUrls(unittest.TestCase):
+
+    def _make_cfg(self):
+        return MyconexConfig()  # default values
+
+    def test_applies_discovered_urls_when_no_env_var(self):
+        """mDNS URLs applied when no env var is set."""
+        cfg = self._make_cfg()
+        urls = ServiceURLs(
+            nats_url="nats://hub:4222",
+            redis_url="redis://hub:6379",
+            qdrant_url="http://hub:6333",
+        )
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("NATS_URL", "REDIS_URL", "QDRANT_URL")}
+
+        with patch.dict(os.environ, env, clear=True):
+            apply_discovered_urls(cfg, urls)
+
+        self.assertEqual(cfg.mesh.nats_url, "nats://hub:4222")
+        self.assertEqual(cfg.mesh.redis_url, "redis://hub:6379")
+        self.assertEqual(cfg.mesh.qdrant_url, "http://hub:6333")
+
+    def test_does_not_overwrite_explicit_env_var(self):
+        """Explicit env var wins — apply_discovered_urls does not overwrite."""
+        cfg = self._make_cfg()
+        original_nats = cfg.mesh.nats_url  # save the default
+        urls = ServiceURLs(
+            nats_url="nats://hub:4222",
+            redis_url="redis://hub:6379",
+            qdrant_url="http://hub:6333",
+        )
+        with patch.dict(os.environ, {"NATS_URL": "nats://myserver:4222"}):
+            apply_discovered_urls(cfg, urls)
+
+        # NATS should NOT be overwritten — user explicitly configured it
+        self.assertEqual(cfg.mesh.nats_url, original_nats)
+        # Redis and Qdrant should be applied (no env var for them)
+        self.assertEqual(cfg.mesh.redis_url, "redis://hub:6379")
+
+    def test_none_urls_not_applied(self):
+        """None fields in ServiceURLs are skipped."""
+        cfg = self._make_cfg()
+        original_nats = cfg.mesh.nats_url
+        urls = ServiceURLs(nats_url=None, redis_url="redis://hub:6379")
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("NATS_URL", "REDIS_URL", "QDRANT_URL")}
+
+        with patch.dict(os.environ, env, clear=True):
+            apply_discovered_urls(cfg, urls)
+
+        self.assertEqual(cfg.mesh.nats_url, original_nats)  # unchanged
+        self.assertEqual(cfg.mesh.redis_url, "redis://hub:6379")
+
+
 if __name__ == '__main__':
     unittest.main()
