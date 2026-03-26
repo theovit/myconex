@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import socket
 import time
 from dataclasses import asdict, dataclass, field
@@ -18,6 +19,21 @@ from zeroconf import ServiceBrowser, ServiceInfo, ServiceListener, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
 
 logger = logging.getLogger(__name__)
+
+# ─── Service Discovery Types ───────────────────────────────────────────────────
+
+@dataclass
+class ServiceURLs:
+    """Resolved connection URLs for hub infrastructure services."""
+    nats_url:   Optional[str] = None   # e.g. "nats://192.168.1.100:4222"
+    redis_url:  Optional[str] = None   # e.g. "redis://192.168.1.100:6379"
+    qdrant_url: Optional[str] = None   # e.g. "http://192.168.1.100:6333"
+
+
+class ServiceDiscoveryError(RuntimeError):
+    """Raised when a required service cannot be resolved via mDNS or env vars."""
+    pass
+
 
 SERVICE_TYPE = "_ai-mesh._tcp.local."
 SERVICE_VERSION = "0.1.0"
