@@ -423,6 +423,29 @@ The self-improvement loop:
 
 ---
 
+## Discord Bot Setup
+
+To use MYCONEX via Discord:
+
+1. **Get your bot token** — [Discord Developer Portal](https://discord.com/developers/applications) → your app → Bot → Reset Token
+2. **Add it to `.env`**:
+   ```
+   DISCORD_BOT_TOKEN=your_token_here
+   ```
+3. **Enable Privileged Intents** in the Portal → Bot → Privileged Gateway Intents:
+   - Message Content Intent
+   - Server Members Intent
+4. **Invite the bot** to your server using the OAuth2 URL Generator (scopes: `bot` + `applications.commands`)
+5. **Start MYCONEX** in discord mode:
+   ```bash
+   python3 -m myconex --mode discord
+   ```
+6. **Verify** — the bot should appear Online and slash commands (`/ask`, `/reset`, `/status`, `/tier`) should be visible within an hour (or instantly with guild sync)
+
+For the full walkthrough — permissions integers, guild sync, troubleshooting, all env vars — see **[`docs/DISCORD_SETUP.md`](docs/DISCORD_SETUP.md)**.
+
+---
+
 ## Documentation
 
 | Doc | Description |
