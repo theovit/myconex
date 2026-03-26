@@ -13,7 +13,7 @@ import os
 import socket
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from zeroconf import ServiceBrowser, ServiceInfo, ServiceListener, Zeroconf
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
@@ -105,6 +105,125 @@ class PeerRegistry:
 
     def get_sync(self, name: str) -> Optional[MeshPeer]:
         return self._peers.get(name)
+
+
+# ─── Port Parsing Helper ───────────────────────────────────────────────────────
+
+def _parse_port(url: str, default: int) -> int:
+    """Extract port from a URL string; return default if absent or unparseable."""
+    from urllib.parse import urlsplit
+    try:
+        port = urlsplit(url).port
+        return port if port is not None else default
+    except Exception:
+        return default
+
+
+# ─── Service Advertiser ────────────────────────────────────────────────────────
+
+_SERVICE_PORTS = {
+    "_nats._tcp.local.":   4222,
+    "_redis._tcp.local.":  6379,
+    "_qdrant._tcp.local.": 6333,
+}
+
+_SERVICE_URL_ATTRS = {
+    "_nats._tcp.local.":   "nats_url",
+    "_redis._tcp.local.":  "redis_url",
+    "_qdrant._tcp.local.": "qdrant_url",
+}
+
+
+class ServiceAdvertiser:
+    """
+    Probes localhost ports and registers mDNS records for running hub services.
+
+    Usage:
+        advertiser = ServiceAdvertiser(zc=discovery.zeroconf, node_name="hub", cfg=cfg)
+        await advertiser.start()
+        # ... node runs ...
+        await advertiser.stop()
+    """
+
+    def __init__(self, zc: "AsyncZeroconf", node_name: str, cfg: Any) -> None:
+        self._zc = zc
+        self._node_name = node_name
+        self._cfg = cfg
+        self._registered: list["AsyncServiceInfo"] = []
+
+    async def start(self) -> None:
+        """Probe all service ports concurrently; register mDNS for each found."""
+        nats_port   = _parse_port(self._cfg.mesh.nats_url,   4222)
+        redis_port  = _parse_port(self._cfg.mesh.redis_url,  6379)
+        qdrant_port = _parse_port(self._cfg.mesh.qdrant_url, 6333)
+
+        service_map = {
+            "_nats._tcp.local.":   nats_port,
+            "_redis._tcp.local.":  redis_port,
+            "_qdrant._tcp.local.": qdrant_port,
+        }
+
+        # Probe all ports concurrently
+        results = await asyncio.gather(
+            *[self._probe_port(port) for port in service_map.values()],
+            return_exceptions=True,
+        )
+
+        for (svc_type, port), result in zip(service_map.items(), results):
+            if result is True:
+                await self._register(svc_type, port)
+
+    async def stop(self) -> None:
+        """Unregister all advertised services."""
+        for info in self._registered:
+            try:
+                await self._zc.async_unregister_service(info)
+            except Exception:
+                pass
+        self._registered.clear()
+
+    async def _probe_port(self, port: int, timeout: float = 1.0) -> bool:
+        """Return True if something is listening on 127.0.0.1:port."""
+        try:
+            _, writer = await asyncio.wait_for(
+                asyncio.open_connection("127.0.0.1", port),
+                timeout=timeout,
+            )
+            writer.close()
+            try:
+                await writer.wait_closed()
+            except Exception:
+                pass
+            return True
+        except Exception:
+            return False
+
+    async def _register(self, svc_type: str, port: int) -> None:
+        instance_name = f"MYCONEX-{self._node_name}.{svc_type}"
+        addresses = [socket.inet_aton("127.0.0.1")]
+        try:
+            # Use our actual LAN IP for the advertisement
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("8.8.8.8", 80))
+                lan_ip = s.getsockname()[0]
+            addresses = [socket.inet_aton(lan_ip)]
+        except Exception:
+            pass
+
+        info = AsyncServiceInfo(
+            svc_type,
+            instance_name,
+            addresses=addresses,
+            port=port,
+            properties={
+                b"node": self._node_name.encode(),
+                b"version": SERVICE_VERSION.encode(),
+            },
+            server=f"{socket.gethostname()}.local.",
+        )
+        await self._zc.async_register_service(info, allow_name_change=True)
+        self._registered.append(info)
+        logger.info(f"[advertiser] registered {svc_type} on port {port}")
 
 
 # ─── Service Listener ─────────────────────────────────────────────────────────
