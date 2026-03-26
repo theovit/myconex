@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from core.discovery.mesh_discovery import ServiceURLs, ServiceDiscoveryError, MeshDiscovery, ServiceAdvertiser
+from core.discovery.mesh_discovery import ServiceURLs, ServiceDiscoveryError, MeshDiscovery, ServiceAdvertiser, ServiceWatcher
 
 
 class TestServiceURLs(unittest.TestCase):
@@ -126,6 +126,76 @@ class TestServiceAdvertiser(unittest.TestCase):
             self.assertFalse(result)
 
         asyncio.run(run())
+
+
+class TestServiceWatcher(unittest.TestCase):
+
+    def test_initial_urls_are_none(self):
+        mock_zc = MagicMock()
+        watcher = ServiceWatcher(zc=mock_zc)
+        urls = watcher.get_urls()
+        self.assertIsNone(urls.nats_url)
+        self.assertIsNone(urls.redis_url)
+        self.assertIsNone(urls.qdrant_url)
+
+    def test_sync_callback_fires_on_url_change(self):
+        """Sync callbacks receive updated ServiceURLs."""
+        mock_zc = MagicMock()
+        watcher = ServiceWatcher(zc=mock_zc)
+
+        received = []
+        watcher.on_change(lambda urls: received.append(urls))
+
+        # Simulate an mDNS discovery event
+        watcher._update_url("nats_url", "nats://192.168.1.10:4222")
+
+        self.assertEqual(len(received), 1)
+        self.assertEqual(received[0].nats_url, "nats://192.168.1.10:4222")
+
+    def test_async_callback_fires_on_url_change(self):
+        """Coroutine callbacks are awaited."""
+        mock_zc = MagicMock()
+        watcher = ServiceWatcher(zc=mock_zc)
+
+        received = []
+
+        async def async_cb(urls):
+            received.append(urls)
+
+        watcher.on_change(async_cb)
+        watcher._update_url("redis_url", "redis://192.168.1.10:6379")
+
+        async def run():
+            await asyncio.sleep(0.05)  # let coroutine schedule
+        asyncio.run(run())
+
+        self.assertEqual(len(received), 1)
+        self.assertEqual(received[0].redis_url, "redis://192.168.1.10:6379")
+
+    def test_url_set_to_none_on_service_removal(self):
+        """Removing an mDNS record sets the URL to None and fires callbacks."""
+        mock_zc = MagicMock()
+        watcher = ServiceWatcher(zc=mock_zc)
+
+        watcher._update_url("nats_url", "nats://192.168.1.10:4222")
+        watcher._update_url("nats_url", None)
+
+        urls = watcher.get_urls()
+        self.assertIsNone(urls.nats_url)
+
+    def test_partial_urls_are_valid(self):
+        """A ServiceURLs with some None fields is a valid callback payload."""
+        mock_zc = MagicMock()
+        watcher = ServiceWatcher(zc=mock_zc)
+
+        received = []
+        watcher.on_change(lambda urls: received.append(urls))
+        watcher._update_url("nats_url", "nats://192.168.1.10:4222")
+        # redis and qdrant still None — callback still fires
+
+        self.assertEqual(len(received), 1)
+        self.assertIsNotNone(received[0].nats_url)
+        self.assertIsNone(received[0].redis_url)
 
 
 if __name__ == '__main__':

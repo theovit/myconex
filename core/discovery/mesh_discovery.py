@@ -226,6 +226,132 @@ class ServiceAdvertiser:
         logger.info(f"[advertiser] registered {svc_type} on port {port}")
 
 
+# ─── Service Watcher ──────────────────────────────────────────────────────────
+
+_SVC_TYPE_TO_ATTR = {
+    "_nats._tcp.local.":   "nats_url",
+    "_redis._tcp.local.":  "redis_url",
+    "_qdrant._tcp.local.": "qdrant_url",
+}
+
+_SVC_TYPE_SCHEMES = {
+    "_nats._tcp.local.":   "nats",
+    "_redis._tcp.local.":  "redis",
+    "_qdrant._tcp.local.": "http",
+}
+
+
+class _ServiceBrowseListener:
+    """Internal Zeroconf listener that feeds discovered records into ServiceWatcher."""
+
+    def __init__(self, watcher: "ServiceWatcher") -> None:
+        self._watcher = watcher
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+
+    def _get_loop(self) -> asyncio.AbstractEventLoop:
+        """Return the event loop stored at start() time (from async context)."""
+        return self._loop  # always set by ServiceWatcher.start() before browsers run
+
+    def add_service(self, zc: Zeroconf, type_: str, name: str) -> None:
+        asyncio.run_coroutine_threadsafe(
+            self._handle_add(zc, type_, name), self._get_loop()
+        )
+
+    def update_service(self, zc: Zeroconf, type_: str, name: str) -> None:
+        asyncio.run_coroutine_threadsafe(
+            self._handle_add(zc, type_, name), self._get_loop()
+        )
+
+    def remove_service(self, zc: Zeroconf, type_: str, name: str) -> None:
+        attr = _SVC_TYPE_TO_ATTR.get(type_)
+        if attr:
+            self._watcher._update_url(attr, None)
+
+    async def _handle_add(self, zc: Zeroconf, type_: str, name: str) -> None:
+        attr = _SVC_TYPE_TO_ATTR.get(type_)
+        if not attr:
+            return
+        try:
+            info = ServiceInfo(type_, name)
+            if not info.request(zc, timeout=3000):
+                return
+            addresses = info.parsed_addresses()
+            if not addresses:
+                return
+            scheme = _SVC_TYPE_SCHEMES.get(type_, "http")
+            url = f"{scheme}://{addresses[0]}:{info.port}"
+            self._watcher._update_url(attr, url)
+        except Exception as e:
+            logger.debug(f"[watcher] error resolving {name}: {e}")
+
+
+class ServiceWatcher:
+    """
+    Browses mDNS for hub services and maintains live ServiceURLs.
+    Stays alive after resolve_service_urls() for continuous reconnect support.
+
+    Usage:
+        watcher = ServiceWatcher(zc=discovery.zeroconf)
+        await watcher.start()
+        watcher.on_change(lambda urls: reconnect(urls))
+        urls = watcher.get_urls()
+        # ... later ...
+        await watcher.stop()
+    """
+
+    def __init__(self, zc: "AsyncZeroconf") -> None:
+        self._zc = zc
+        self._urls = ServiceURLs()
+        self._callbacks: list[Callable] = []
+        self._browsers: list = []
+
+    async def start(self) -> None:
+        """Begin browsing all three service types."""
+        listener = _ServiceBrowseListener(self)
+        listener._loop = asyncio.get_running_loop()  # capture loop from async context
+        for svc_type in _SVC_TYPE_TO_ATTR:
+            browser = AsyncServiceBrowser(
+                self._zc.zeroconf, svc_type, listener
+            )
+            self._browsers.append(browser)
+        logger.info("[watcher] service discovery started")
+
+    async def stop(self) -> None:
+        """Stop all browsers."""
+        self._browsers.clear()
+        logger.info("[watcher] service discovery stopped")
+
+    def get_urls(self) -> ServiceURLs:
+        """Return a snapshot of currently resolved service URLs."""
+        return ServiceURLs(
+            nats_url=self._urls.nats_url,
+            redis_url=self._urls.redis_url,
+            qdrant_url=self._urls.qdrant_url,
+        )
+
+    def on_change(self, callback: Callable[["ServiceURLs"], None]) -> None:
+        """Register a callback (sync or coroutine) fired on any URL change."""
+        self._callbacks.append(callback)
+
+    def _update_url(self, attr: str, value: Optional[str]) -> None:
+        """Update a URL field and fire all registered callbacks."""
+        setattr(self._urls, attr, value)
+        snapshot = self.get_urls()
+        loop = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+
+        for cb in self._callbacks:
+            result = cb(snapshot)
+            if asyncio.iscoroutine(result):
+                if loop:
+                    asyncio.ensure_future(result, loop=loop)
+                else:
+                    asyncio.run(result)
+
+
 # ─── Service Listener ─────────────────────────────────────────────────────────
 
 class MeshServiceListener:
