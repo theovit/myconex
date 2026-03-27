@@ -35,10 +35,13 @@ detect_display_mode() {
 # --- Python version check ---
 detect_python() {
     local py
-    for py in python3.11 python3.12 python3; do
+    for py in python3.11 python3.12 python3.13 python3; do
         if command -v "$py" &>/dev/null; then
-            local ver; ver=$("$py" -c "import sys; print(sys.version_info[:2])")
-            if [[ "$ver" > "(3, 10)" ]]; then echo "$py"; return 0; fi
+            local minor; minor=$("$py" -c "import sys; print(sys.version_info.minor)" 2>/dev/null)
+            local major; major=$("$py" -c "import sys; print(sys.version_info.major)" 2>/dev/null)
+            if [[ -n "$major" && -n "$minor" ]] && [[ "$major" -eq 3 && "$minor" -ge 11 ]]; then
+                echo "$py"; return 0
+            fi
         fi
     done
     return 1
@@ -81,7 +84,7 @@ detect_tier() {
     local cores ram
     cores=$(_detect_cpu_cores)
     ram=$(_detect_ram_gb)
-    if [[ "$cores" -ge 8 && "$ram" -ge 16 ]]; then echo "T3"
-    else                                           echo "T4"
+    if [[ "$cores" -ge 16 ]] || [[ "$ram" -ge 16 ]]; then echo "T3"
+    else                                                   echo "T4"
     fi
 }

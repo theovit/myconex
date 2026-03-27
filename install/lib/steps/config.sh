@@ -4,6 +4,7 @@
 step_config() {
     set -euo pipefail
     local sentinel="${HOME}/.myconex/.installed_config"
+    [[ -f "$sentinel" && -z "${REINSTALL:-}" ]] && { echo "[config] already installed, skipping"; return 0; }
     local node_yaml="${MYCONEX_REPO_ROOT:?}/config/node.yaml"
     local env_file="${MYCONEX_REPO_ROOT}/.env"
 
@@ -44,9 +45,9 @@ YAML
         local val="${key_val#*:}"
         [[ -z "$val" ]] && continue
         if grep -q "^${key}=" "$env_file"; then
-            sed -i "s|^${key}=.*|${key}=${val}|" "$env_file"
+            awk -v k="$key" -v v="$val" 'BEGIN{FS="="; OFS="="} $1==k{$2=v; print; next} {print}' "$env_file" > "${env_file}.tmp" && mv "${env_file}.tmp" "$env_file"
         else
-            echo "${key}=${val}" >> "$env_file"
+            printf '%s=%s\n' "$key" "$val" >> "$env_file"
         fi
     done
 

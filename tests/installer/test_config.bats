@@ -16,7 +16,10 @@ setup() {
     export -f log_step
 }
 
-teardown() { rm -rf "$MYCONEX_REPO_ROOT"; }
+teardown() {
+    rm -rf "$MYCONEX_REPO_ROOT"
+    rm -f "${HOME}/.myconex/.installed_config"
+}
 
 @test "config.sh writes node.yaml with correct role" {
     run step_config

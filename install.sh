@@ -155,7 +155,7 @@ main() {
 
         # Feature selection
         FEAT_DISCORD=false; FEAT_INTEGRATIONS=false; FEAT_DASHBOARD=false
-        if [[ "$MYCONEX_ROLE" != "lightweight" ]]; then
+        if [[ "$MYCONEX_ROLE" != "lightweight" ]] && [[ "$MYCONEX_ROLE" != "full-node" || "$MYCONEX_DETECTED_TIER" != "T4" ]]; then
             ui_checklist "Optional features:" \
                 "discord:off" "integrations:off" "dashboard:off"
             for sel in "${SELECTED[@]}"; do
