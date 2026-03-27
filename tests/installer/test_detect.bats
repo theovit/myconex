@@ -52,3 +52,32 @@ setup() { source_lib "detect.sh"; }
     run detect_display_mode
     assert_output "plain"
 }
+
+@test "detect_tier returns T1 for >24GB VRAM" {
+    # nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits outputs a bare integer
+    mock_cmd nvidia-smi 0 "24564"
+    run detect_tier
+    assert_output "T1"
+}
+
+@test "detect_tier returns T2 for 8-24GB VRAM" {
+    mock_cmd nvidia-smi 0 "12288"
+    run detect_tier
+    assert_output "T2"
+}
+
+@test "detect_tier returns T3 for no GPU, >8 cores" {
+    nvidia-smi() { return 1; }; export -f nvidia-smi
+    MYCONEX_TEST_CPU_CORES=20
+    MYCONEX_TEST_RAM_GB=32
+    run detect_tier
+    assert_output "T3"
+}
+
+@test "detect_tier returns T4 for no GPU, <=4 cores" {
+    nvidia-smi() { return 1; }; export -f nvidia-smi
+    MYCONEX_TEST_CPU_CORES=4
+    MYCONEX_TEST_RAM_GB=4
+    run detect_tier
+    assert_output "T4"
+}
