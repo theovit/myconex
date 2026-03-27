@@ -16,6 +16,6 @@ def _load_tier_defs():
 def test_tier_models_match_mesh_config():
     defs = _load_tier_defs()
     assert defs["T1"]["ollama_model"] == "llama3.1:70b"
-    assert defs["T2"]["ollama_model"] == "qwen3:8b"
-    assert defs["T3"]["ollama_model"] == "qwen3:4b"
-    assert defs["T4"]["ollama_model"] == "qwen3:0.6b"
+    assert defs["T2"]["ollama_model"] == "llama3.1:8b"
+    assert defs["T3"]["ollama_model"] == "llama3.2:3b"
+    assert defs["T4"]["ollama_model"] == "phi3:mini"
