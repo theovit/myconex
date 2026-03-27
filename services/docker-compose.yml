@@ -250,10 +250,9 @@ services:
   dashboard:
     build:
       context: ..
-      dockerfile: services/Dockerfile
+      dockerfile: services/Dockerfile.dashboard
     container_name: myconex-dashboard
     restart: unless-stopped
-    command: ["uvicorn", "dashboard.app:app", "--host", "0.0.0.0", "--port", "7860"]
     ports:
       - "7860:7860"
     volumes:
