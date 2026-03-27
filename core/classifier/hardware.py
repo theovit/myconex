@@ -82,19 +82,19 @@ TIER_DEFINITIONS = {
         "label": "Mid-GPU",
         "roles": ["medium-model", "inference", "embedding", "fine-tuning"],
         "description": "Mid-range GPU node with 8–24 GB VRAM. Runs 7B–30B models.",
-        "ollama_model": "llama3.1:8b",
+        "ollama_model": "qwen3:8b",
     },
     "T3": {
         "label": "CPU-Heavy",
         "roles": ["orchestration", "embedding", "lightweight-inference", "relay"],
         "description": "High-core-count CPU or large RAM without significant GPU.",
-        "ollama_model": "llama3.2:3b",
+        "ollama_model": "qwen3:4b",
     },
     "T4": {
         "label": "Edge / Embedded",
         "roles": ["sensor", "relay", "lightweight-inference"],
         "description": "Raspberry Pi or low-resource node. Minimal inference only.",
-        "ollama_model": "phi3:mini",
+        "ollama_model": "qwen3:0.6b",
     },
 }
 
