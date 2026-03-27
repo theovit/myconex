@@ -1,7 +1,10 @@
 import ast, pathlib
 
 def _load_tier_defs():
-    src = pathlib.Path("core/classifier/hardware.py").read_text()
+    # hardware.py imports psutil and may call subprocess at module level, making a
+    # direct import fragile in CI. We parse the source as AST instead to extract
+    # the literal TIER_DEFINITIONS dict without executing the module.
+    src = (pathlib.Path(__file__).parent.parent / "core/classifier/hardware.py").read_text()
     tree = ast.parse(src)
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):

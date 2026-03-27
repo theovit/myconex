@@ -111,7 +111,11 @@
 ---
 
 ## Sync hardware.py tier models to qwen3
+
 **Decision:** Updated TIER_DEFINITIONS in hardware.py to use qwen3 models (T2: qwen3:8b, T3: qwen3:4b, T4: qwen3:0.6b).
-**Why:** mesh_config.yaml was updated 2026-03-24 but hardware.py was not synced. Installer reads hardware.py as the single source of truth.
+
+**Why:** hardware.py is the installer's single source of truth for Ollama model selection per tier; a mismatch causes nodes to pull stale models at install time.
+
 **Alternatives:** Keep old models; rejected because mesh_config.yaml explicitly updated them.
+
 **Consequences:** Nodes installing fresh will pull qwen3 models, not llama3.1/phi3.
