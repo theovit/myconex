@@ -4,3 +4,12 @@
 [submodule "integrations/hermes-agent"]
 	path = integrations/hermes-agent
 	url = https://github.com/NousResearch/hermes-agent
+[submodule "tests/lib/bats-core"]
+	path = tests/lib/bats-core
+	url = https://github.com/bats-core/bats-core
+[submodule "tests/lib/bats-support"]
+	path = tests/lib/bats-support
+	url = https://github.com/bats-core/bats-support
+[submodule "tests/lib/bats-assert"]
+	path = tests/lib/bats-assert
+	url = https://github.com/bats-core/bats-assert
