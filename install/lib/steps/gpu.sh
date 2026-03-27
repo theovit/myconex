@@ -11,6 +11,7 @@ step_gpu() {
     # Auto-skip if no NVIDIA GPU
     if ! command -v nvidia-smi &>/dev/null; then
         log_step "No NVIDIA GPU detected — skipping GPU setup"
+        mkdir -p "$(dirname "$SENTINEL")"
         touch "$SENTINEL"
         return 0
     fi
