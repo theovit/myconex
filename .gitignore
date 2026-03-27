@@ -43,7 +43,7 @@ mobile/.env.local
 mobile/.env.*.local
 
 # ─── Docker ───────────────────────────────────────────────────────────────────
-services/ollama/
+services/ollama/models/
 services/redis/data/
 services/qdrant/storage/
 services/qdrant/snapshots/

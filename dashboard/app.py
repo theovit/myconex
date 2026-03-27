@@ -1947,7 +1947,21 @@ if _FASTAPI_OK:
                     },
                 )
             latency = time.time() - t0
-            resp_text = r.json().get("message", {}).get("content", "").strip()
+            resp_json = r.json()
+
+            # Surface Ollama-level errors (e.g. model not found, connection refused)
+            if "error" in resp_json:
+                return JSONResponse(
+                    {"ok": False, "message": f"Ollama: {resp_json['error']}"},
+                    status_code=502,
+                )
+
+            resp_text = resp_json.get("message", {}).get("content", "").strip()
+            if not resp_text:
+                return JSONResponse(
+                    {"ok": False, "message": "Ollama returned an empty response."},
+                    status_code=502,
+                )
 
             try:
                 from core.usage_tracker import record as _ur
@@ -1956,7 +1970,7 @@ if _FASTAPI_OK:
             except Exception:
                 pass
 
-            return JSONResponse({"ok": True, "response": resp_text or "…"})
+            return JSONResponse({"ok": True, "response": resp_text})
         except Exception as exc:
             return JSONResponse({"ok": False, "message": str(exc)}, status_code=500)
 
