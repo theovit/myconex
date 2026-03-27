@@ -1,0 +1,31 @@
+# MYCONEX Answer File — fleet/unattended install config
+# Generate with: ./install.sh --save-answers --answers-out myconex-answers.yaml
+# Use with:      ./install.sh --unattended myconex-answers.yaml
+#
+# Secrets (bot tokens, API keys) must be passed as environment variables —
+# they are never written here. See README for the full env var list.
+
+# Machine role in the mesh
+role: hub                        # hub | full-node | lightweight-node
+
+# Node identity
+node_name: ""                    # default: system hostname
+hub_address: ""                  # nodes only; blank = mDNS auto-discovery
+
+# Optional feature flags
+features:
+  discord: false                 # install Discord gateway
+  integrations: false            # install Gmail/YouTube/RSS/podcast ingesters
+  dashboard: false               # install web dashboard
+
+# API keys — LEAVE BLANK HERE, inject via env vars at install time:
+#   DISCORD_BOT_TOKEN, OPENROUTER_API_KEY, NOUS_API_KEY,
+#   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET
+api_keys:
+  discord_bot_token: ""
+  openrouter_api_key: ""
+  nous_api_key: ""
+
+# Ollama model override — blank = auto-select by detected hardware tier
+# Tier defaults: T1=llama3.1:70b  T2=qwen3:8b  T3=qwen3:4b  T4=qwen3:0.6b
+ollama_model: ""
